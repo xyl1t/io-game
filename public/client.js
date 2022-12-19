@@ -4,7 +4,7 @@ let socket;
 
 let clicks = [];
 
-let mouseInfo = {
+const mouse = {
   x: 0,
   y: 0,
   scrollX: 0,
@@ -12,6 +12,7 @@ let mouseInfo = {
   leftDown: false,
   rightDown: false,
 };
+const keyboard = {};
 
 $(() => {
   setup();
@@ -37,6 +38,9 @@ function setup() {
   canvas.addEventListener("mousemove", mousemove, false);
   canvas.addEventListener("wheel", wheel, false);
 
+  window.addEventListener("keydown", keydown, true);
+  window.addEventListener("keyup", keyup, true);
+
   // disabling alpha for performance
   ctx = canvas.getContext("2d", { alpha: false });
 
@@ -47,9 +51,9 @@ function setup() {
     },
   });
 
-  socket.on("serverUpdate", clicksFromServer => {
-    clicks = clicksFromServer
-  })
+  socket.on("serverUpdate", (clicksFromServer) => {
+    clicks = clicksFromServer;
+  });
 }
 
 function loop() {
@@ -67,29 +71,29 @@ function loop() {
 }
 
 function mousedown(e) {
-  mouseInfo.x = e.pageX - canvas.offsetLeft;
-  mouseInfo.y = e.pageY - canvas.offsetTop;
-  mouseInfo.leftDown = (e.buttons & 1) == 1;
-  mouseInfo.rightDown = (e.buttons & 2) == 2;
-  console.log("Event: mousedown", mouseInfo);
+  mouse.x = e.pageX - canvas.offsetLeft;
+  mouse.y = e.pageY - canvas.offsetTop;
+  mouse.leftDown = (e.buttons & 1) == 1;
+  mouse.rightDown = (e.buttons & 2) == 2;
+  console.log("Event: mousedown", mouse);
 
-  socket.emit("click", mouseInfo);
+  socket.emit("click", mouse);
 }
 
 function mouseup(e) {
-  mouseInfo.x = e.pageX - canvas.offsetLeft;
-  mouseInfo.y = e.pageY - canvas.offsetTop;
-  mouseInfo.leftDown = (e.buttons & 1) == 1;
-  mouseInfo.rightDown = (e.buttons & 2) == 2;
-  console.log("Event: mouseup", mouseInfo);
+  mouse.x = e.pageX - canvas.offsetLeft;
+  mouse.y = e.pageY - canvas.offsetTop;
+  mouse.leftDown = (e.buttons & 1) == 1;
+  mouse.rightDown = (e.buttons & 2) == 2;
+  console.log("Event: mouseup", mouse);
 }
 
 function mousemove(e) {
-  mouseInfo.x = e.pageX - canvas.offsetLeft;
-  mouseInfo.y = e.pageY - canvas.offsetTop;
-  mouseInfo.leftDown = (e.buttons & 1) == 1;
-  mouseInfo.rightDown = (e.buttons & 2) == 2;
-  console.log("Event: mosemove", mouseInfo);
+  mouse.x = e.pageX - canvas.offsetLeft;
+  mouse.y = e.pageY - canvas.offsetTop;
+  mouse.leftDown = (e.buttons & 1) == 1;
+  mouse.rightDown = (e.buttons & 2) == 2;
+  console.log("Event: mosemove", mouse);
 }
 
 function wheel(e) {
@@ -103,8 +107,18 @@ function wheel(e) {
     deltaX = e.deltaY || e.deltaX;
   }
 
-  mouseInfo.scrollX += (Math.max(-100, Math.min(100, deltaX)) / 100) * 100;
-  mouseInfo.scrollY += (Math.max(-100, Math.min(100, deltaY)) / 100) * 100;
+  const finalX = (Math.max(-100, Math.min(100, deltaX)) / 100) * 100;
+  const finalY = (Math.max(-100, Math.min(100, deltaY)) / 100) * 100;
 
-  console.log("Event: wheel", mouseInfo);
+  console.log("Event: wheel", finalX, finalY);
+}
+
+function keydown(e) {
+  keyboard[e.key.toLowerCase()] = true;
+  console.log("down", e.key.toLowerCase())
+}
+
+function keyup(e) {
+  keyboard[e.key.toLowerCase()] = false;
+  console.log("up", e.key.toLowerCase())
 }
