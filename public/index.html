@@ -2,7 +2,7 @@
 <html lang="en-US">
   <head>
     <meta charset="utf-8" />
-    <title>Excalidraw 2.0</title>
+    <title>io-game</title>
 
     <style>
       * {
@@ -17,118 +17,7 @@
         background: #fff;
         display: block;
         margin: 0 auto;
-        cursor: none;
       }
-
-      .container {
-        position: relative;
-      }
-
-      .overlay {
-        position: absolute;
-      }
-
-      .top-left {
-        top: 0.1em;
-        left: 0.1em;
-        pointer-events: none;
-      }
-      .top-left * {
-        margin-right: 0.5em;
-      }
-
-      .row {
-        display: flex;
-        align-items: center;
-      }
-      .row * {
-        pointer-events: auto;
-      }
-
-      .top-right {
-        top: 0.1em;
-        right: 0.1em;
-      }
-
-      .top-right * {
-        top: 0px;
-      }
-
-      .bottom-left {
-        bottom: 0.1em;
-        left: 0.1em;
-        pointer-events: none;
-        width: 300px;
-        position: absolute;
-      }
-
-      .bottom-left * {
-        pointer-events: auto;
-
-      }
-
-      #selectedColor {
-        height: 1.5em;
-      }
-
-      #coordinates {
-        display:inline;
-      }
-
-      #name {
-        width: 100%;
-        box-sizing: border-box;
-        margin-bottom: 0.25em;
-      }
-
-
-      #chatdiv {
-        /* position: relative; */
-        margin-bottom: 0.25em;
-        padding: 0px;
-        border: 1px solid black;
-        background-color: #f5f5f5;
-        width: 100%;
-        height: calc(100vh - 128px);
-        font-size: 12px;
-        overflow-y: auto;
-        display: inline-flex;
-        flex-direction: column-reverse;
-        box-sizing: border-box;
-      }
-      #chatdiv * {
-        margin: 0px;
-        padding: 0px;
-        padding-right: 2px;
-        padding-left: 2px;
-        padding-bottom: 2px;
-        box-sizing: border-box;
-        width: 100%;
-      }
-      #chatInput {
-        width: calc(100% - 6.5em);
-        box-sizing: border-box;
-        float: left;
-      }
-
-      .myMsg {
-        text-align: right;
-      }
-
-      .serverMsg {
-        text-shadow: 1px 1px 1px #8df;
-        background-color: #ddd;
-      }
-
-      #xCoord, #yCoord {
-        width: 3em;
-        margin-left: 0.25em;
-        box-sizing: border-box;
-        text-align: right;
-        float: right;
-
-      }
-
     </style>
 
     <script src="/socket.io/socket.io.js"></script>
@@ -138,39 +27,7 @@
 
   <body>
     <div class="container">
-      <canvas id="canvas"></canvas>
-
-      <div class="overlay top-left">
-        <div class="row">
-          <button id="square">Square</button>
-          <button id="circle">Circle</button>
-          <button id="line">Line</button>
-          <button id="freehand">Freehand</button>
-          <input id="selectedColor" type="color" name="selectedColor" value="#ff0000">
-        </div>
-        <div class="row">
-          <label for="lineWidth">line width</label>
-          <input style="vertical-align: middlidth" type="range" id="lineWidth"
-            name="lineWidth" value="3" min="1" max="20"></input>
-          <output name="lineWidthOutput" id="lineWidthOutput">3</output>
-        </div>
-        <div class="row">
-          <input id="fill" type="checkbox" name="fill"></input>
-          <label for="fill">fill</label>
-        </div>
-      </div>
-
-      <!-- <div class="overlay top-right"> -->
-      <!-- </div> -->
-
-      <div class="overlay bottom-left">
-        <input id="name" type="text" placeholder="Name"></input>
-        <div id="chatdiv"><div></div></div>
-        <input id="chatInput" tabindex=1 type="text"></input>
-        <input id="xCoord" tabindex=3 type="text" value = "10"></input>
-        <input id="yCoord" tabindex=2 type="text" value = "10"></input>
-      </div>
-
+      <canvas id="canvas" oncontextmenu="return false;"></canvas>
     </div>
   </body>
 </html>
