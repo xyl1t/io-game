@@ -1,3 +1,16 @@
+/*************************************************************************** */
+/*                          IO-Game over WebSockets                          */
+/*                                                                           */
+/*  Marat Isaw, Benjamin Terbul, Justus Arndt, Paul Trattnig, Thmoas Fischer */
+/*  HTL Villach - Abteilung Informatik - 4AHIF                               */
+/*  (c) 2022/23                                                              */
+/*************************************************************************** */
+"use strict";
+
+const yargs = require("yargs/yargs");
+const { hideBin } = require("yargs/helpers");
+const argv = yargs(hideBin(process.argv)).argv;
+
 const express = require("express");
 const app = express();
 const http = require("http");
@@ -24,7 +37,7 @@ function serverUpdate() {
 
 setInterval(serverUpdate, 1000 / 60);
 
-const PORT = 9500;
+const PORT = argv.port ?? 8080;
 server.listen(PORT, () => {
   console.log(`listening on *:${PORT}`);
 });
