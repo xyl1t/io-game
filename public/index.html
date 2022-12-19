@@ -1,33 +1,19 @@
 <!DOCTYPE html>
-<html lang="en-US">
-  <head>
-    <meta charset="utf-8" />
-    <title>io-game</title>
-
-    <style>
-      * {
-        font-family: "Arial";
-      }
-      body {
-        padding: 0;
-        margin: 0;
-        background: #fff;
-      }
-      canvas {
-        background: #fff;
-        display: block;
-        margin: 0 auto;
-      }
-    </style>
-
-    <script src="/socket.io/socket.io.js"></script>
+<html lang="en">
+<head>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
-    <script src="client.js"></script>
-  </head>
-
-  <body>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <script src="./index_setup.js"></script>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
     <div class="container">
-      <canvas id="canvas" oncontextmenu="return false;"></canvas>
+        <input type="text" class="form-control" placeholder="Username" aria-label="Username" aria-describedby="basic-addon1">
+        <input type="text" class="form-control" placeholder="Server_IP" aria-label="Server_IP" aria-describedby="basic-addon1">
+        <button id="start_game" type="button" class="btn btn-primary">Start Game</button>
     </div>
-  </body>
+</body>
 </html>
