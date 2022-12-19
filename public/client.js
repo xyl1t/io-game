@@ -3,16 +3,20 @@ let ctx;
 let socket;
 
 let clicks = [];
+let players = [];
 
 const mouse = {
   x: 0,
   y: 0,
+  angle: 0,
   scrollX: 0,
   scrollY: 0,
   leftDown: false,
   rightDown: false,
 };
 const keyboard = {};
+
+let player = {};
 
 $(() => {
   setup();
@@ -51,8 +55,12 @@ function setup() {
     },
   });
 
-  socket.on("serverUpdate", (clicksFromServer) => {
-    clicks = clicksFromServer;
+  socket.on("welcome", (me) => {
+    player = me;
+  });
+
+  socket.on("serverUpdate", (playersFromServer) => {
+    players = playersFromServer;
   });
 }
 
@@ -60,14 +68,75 @@ function loop() {
   ctx.fillStyle = "#fff";
   ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
 
-  for (const click of clicks) {
-    ctx.fillStyle = "#000";
-    ctx.beginPath();
-    ctx.arc(click.x, click.y, 10, 0, 2 * Math.PI);
-    ctx.fill();
+  ctx.save();
+  ctx.translate(canvas.width / 2, canvas.height / 2);
+  ctx.translate(-player.x, -player.y);
+
+  for (const id in players) {
+    // if (player.id != id) {
+      drawPlayer(players[id])
+    // }
+  }
+
+  // me
+  // drawPlayer({...player, x: 0, y: 0, name: "me"});
+
+  ctx.restore();
+
+  if (keyboard['w']) {
+    player.y -= 4;
+    socket.emit("playerUpdate", player);
+  }
+  if (keyboard['s']) {
+    player.y += 4;
+    socket.emit("playerUpdate", player);
+  }
+  if (keyboard['a']) {
+    player.x -= 4;
+    socket.emit("playerUpdate", player);
+  }
+  if (keyboard['d']) {
+    player.x += 4;
+    socket.emit("playerUpdate", player);
   }
 
   window.requestAnimationFrame(loop);
+}
+
+function drawPlayer(player) {
+  ctx.save();
+  ctx.translate(player.x, player.y);
+  ctx.rotate(player.angle);
+
+  const radius = player.radius;
+
+  ctx.lineWidth = 4;
+  // ctx.fillStyle = "#888";
+  ctx.fillStyle = player.color;
+  ctx.strokeStyle = "#333";
+  ctx.strokeRect(radius * 0.8, -0.333 * radius, radius * 1.5, radius * 0.666);
+  ctx.fillRect(radius * 0.8, -0.333 * radius, radius * 1.5, radius * 0.666);
+
+  ctx.beginPath();
+  ctx.arc(0, 0, radius, 0, 2 * Math.PI);
+  ctx.stroke();
+
+  ctx.fillStyle = player.color;
+  ctx.beginPath();
+  ctx.arc(0, 0, radius, 0, 2 * Math.PI);
+  ctx.fill();
+  ctx.restore();
+
+  ctx.save();
+  ctx.translate(player.x, player.y);
+  ctx.font = "12px Helvetica";
+  ctx.fillStyle = "#333";
+  ctx.fillText(
+    player.name,
+    0 - ctx.measureText(player.name).width / 2,
+    radius * 2
+  );
+  ctx.restore();
 }
 
 function mousedown(e) {
@@ -93,7 +162,14 @@ function mousemove(e) {
   mouse.y = e.pageY - canvas.offsetTop;
   mouse.leftDown = (e.buttons & 1) == 1;
   mouse.rightDown = (e.buttons & 2) == 2;
+  const dx = mouse.x - canvas.width / 2;
+  const dy = mouse.y - canvas.height / 2;
+  mouse.angle = Math.atan2(dy, dx);
   console.log("Event: mosemove", mouse);
+
+  player.angle = mouse.angle;
+
+  socket.emit("playerUpdate", player)
 }
 
 function wheel(e) {
@@ -115,10 +191,10 @@ function wheel(e) {
 
 function keydown(e) {
   keyboard[e.key.toLowerCase()] = true;
-  console.log("down", e.key.toLowerCase())
+  console.log("down", e.key.toLowerCase());
 }
 
 function keyup(e) {
   keyboard[e.key.toLowerCase()] = false;
-  console.log("up", e.key.toLowerCase())
+  console.log("up", e.key.toLowerCase());
 }

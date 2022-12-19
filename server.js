@@ -22,17 +22,49 @@ app.use(express.static("public"));
 
 const clicks = [];
 
-io.on("connection", (socket) => {
-  console.log("a new user connected");
+const players = {};
+const sockets = {};
 
-  socket.on("click", mouseInfo => {
+io.on("connection", (socket) => {
+  const token = socket.handshake.auth.token;
+  if (token != "actualUser") socket.disconnect(true);
+
+  let newPlayer = {
+    id: socket.id,
+    x: 0,
+    y: 0,
+    color: getRandomColor(),
+    angle: 0,
+    radius: 16,
+    name: "",
+  };
+  players[newPlayer.id] = newPlayer;
+  sockets[newPlayer.id] = socket;
+
+  console.log("a new player connected", players);
+
+  socket.emit("welcome", newPlayer);
+
+  socket.on("disconnect", () => {
+    delete players[socket.id];
+    delete sockets[socket.id];
+    console.log("a player disconnected", players);
+  });
+
+  socket.on("playerUpdate", (player) => {
+    players[player.id] = player;
+    console.log("playerUpdate", player);
+  });
+
+
+  socket.on("click", (mouseInfo) => {
     clicks.push(mouseInfo);
     console.log("click", mouseInfo);
-  })
+  });
 });
 
 function serverUpdate() {
-  io.emit("serverUpdate", clicks);
+  io.emit("serverUpdate", players);
 }
 
 setInterval(serverUpdate, 1000 / 60);
