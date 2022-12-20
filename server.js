@@ -20,9 +20,10 @@ const io = new Server(server);
 
 app.use(express.static("public"));
 
-const clicks = [];
+const updateTime = 1000/30;
 
 const players = {};
+const bullets = {};
 const sockets = {};
 
 io.on("connection", (socket) => {
@@ -37,6 +38,8 @@ io.on("connection", (socket) => {
     angle: 0,
     radius: 16,
     name: "",
+    hp: 100,
+    speed: 3,
   };
   players[newPlayer.id] = newPlayer;
   sockets[newPlayer.id] = socket;
@@ -56,18 +59,52 @@ io.on("connection", (socket) => {
     console.log("playerUpdate", player);
   });
 
-
-  socket.on("click", (mouseInfo) => {
-    clicks.push(mouseInfo);
-    console.log("click", mouseInfo);
+  socket.on("shoot", (player) => {
+    const bulletId = genId();
+    bullets[bulletId] = {
+      id: bulletId,
+      playerId: player.id,
+      angle: player.angle,
+      speed:5,
+      x: player.x,
+      y: player.y,
+      radius: 8,
+      color: player.color,
+      range: 1000, // pixels
+      damage: 10, // hp
+    }
   });
 });
 
 function serverUpdate() {
-  io.emit("serverUpdate", players);
+  for (const bId in bullets) {
+    const b = bullets[bId]
+    b.range -= b.speed;
+    if (b.range > 0) {
+      b.x += b.speed * Math.cos(b.angle);
+      b.y += b.speed * Math.sin(b.angle);
+
+      for (const pId in players) {
+        const p = players[pId];
+        const distX = p.x - b.x;
+        const distY = p.y - b.y;
+        const distance = Math.sqrt((distX*distX) + (distY*distY));
+        if (pId != b.playerId && distance <= p.radius + b.radius) {
+          p.hp -= b.damage;
+          delete bullets[bId];
+        }
+      }
+
+
+    } else {
+      delete bullets[bId];
+    }
+  }
+
+  io.emit("serverUpdate", players, bullets);
 }
 
-setInterval(serverUpdate, 1000 / 60);
+setInterval(serverUpdate, updateTime);
 
 const PORT = argv.port ?? 8080;
 server.listen(PORT, () => {
@@ -78,4 +115,11 @@ function getRandomColor() {
   return `rgb(${Math.floor(Math.random() * 255)},${Math.floor(
     Math.random() * 255
   )},${Math.floor(Math.random() * 255)})`;
+}
+
+function genId() {
+  return Math.floor((1 + Math.random()) * 0x100000000)
+    .toString(16)
+    .substring(1)
+    .toString();
 }
