@@ -47,7 +47,7 @@ function setup() {
   // setup client
   console.log("Loading canvas and context...");
   const canvas = document.querySelector("#canvas");
-  canvas.width = window.innerWidth;window.innerWidth;
+  canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
   window.addEventListener(
     "resize",
