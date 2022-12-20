@@ -9,6 +9,9 @@ let randomNumber = Math.floor(Math.random() * 2) + 1;
 const gridOffset = 80;
 const gridColor = "#f2f";
 
+var imageOfMap = null;
+var imageOfObstacles = null;
+
 const mouse = {
   x: 0,
   y: 0,
@@ -71,8 +74,11 @@ function setup() {
   // disabling alpha for performance
   ctx = canvas.getContext("2d", { alpha: false });
 
-  paintGrid()
+  imageOfObstacles = document.createElement('img');
+  imageOfObstacles.src = '/img/obstacles.png';
 
+  imageOfMap = document.createElement('img');
+  imageOfMap.src='/img/map'+randomNumber+'.png'; 
   /*var img = document.getElementById("tank");
   ctx.drawImage(img, 100, 100);*/
 
@@ -92,6 +98,17 @@ function setup() {
   });
 }
 
+function paintMap(){
+  ctx.save();
+  ctx.translate(canvas.width / 2, canvas.height / 2);
+  ctx.translate(-player.x, -player.y);
+  
+  console.log(imageOfMap)
+  if(imageOfMap)
+    ctx.drawImage(imageOfMap,-2500,-2500,5000,5000);
+ 
+  ctx.restore();
+}
 
 function paintGrid(){
   ctx.save()
@@ -127,18 +144,7 @@ function loop() {
   ctx.fillStyle = "#fff";
   ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);  
  
-  ctx.save();
-  ctx.translate(canvas.width / 2, canvas.height / 2);
-  ctx.translate(-player.x, -player.y);
-  
-
-  let imageOfMap = document.createElement('img');
-
-  imageOfMap.src='/img/map'+randomNumber+'.png'; 
-  ctx.drawImage(imageOfMap,-2500,-2500,5000,5000);
-  
- 
-  ctx.restore();
+  paintMap();
   paintGrid();
   ctx.save();
   ctx.translate(canvas.width / 2, canvas.height / 2);
@@ -146,13 +152,9 @@ function loop() {
 
   drawPlayer(player);   
 
-  let imageOfObstacles = document.createElement('img');
-  imageOfObstacles.src = '/img/obstacles.png';
-  ctx.drawImage(imageOfObstacles, -2500, -2500, 5000, 5000);
-  
-  
+  if(imageOfObstacles)
+    ctx.drawImage(imageOfObstacles, -2500, -2500, 5000, 5000);
 
-  
   //draw own player first, to reduce stutter
   
   for (const id in players) {
@@ -160,7 +162,6 @@ function loop() {
       drawPlayer(players[id])
     }
   }
-
 
 
   // me
