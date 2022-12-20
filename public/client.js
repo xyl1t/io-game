@@ -21,6 +21,12 @@ $(() => {
 function setup() {
   $('#start_game').click(onStartGame)
 
+  $('#username').keypress((e) => {
+    if (e.key === "Enter") {
+      onStartGame(e)
+    }
+  }); 
+
   function onStartGame(e){
     $('#settings_elements').css('display', 'none');
     $('#game_elements').css('display', 'inline')
@@ -28,20 +34,10 @@ function setup() {
     // Get the input field
   }
 
-  var input = document.getElementById("username");
-
-  // Execute a function when the user presses a key on the keyboard
-  input.addEventListener("keypress", function(event) {
-    // If the user presses the "Enter" key on the keyboard
-    if (event.key === "Enter") {
-      onStartGame(event)
-    }
-  }); 
-
   // setup client
   console.log("Loading canvas and context...");
   const canvas = document.querySelector("#canvas");
-  canvas.width = window.innerWidth;
+  canvas.width = window.innerWidth;window.innerWidth;
   canvas.height = window.innerHeight;
   window.addEventListener(
     "resize",
