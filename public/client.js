@@ -2,8 +2,15 @@
 let ctx;
 let socket;
 
-let players = {};
+let players = [];
 let bullets = {};
+let randomNumber = Math.floor(Math.random() * 2) + 1;
+
+const gridOffset = 80;
+const gridColor = "#f2f";
+
+let map = {};
+let obstacles = {};
 
 const mouse = {
   x: 0,
@@ -57,11 +64,10 @@ function setup() {
   window.addEventListener("keydown", keydown, true);
   window.addEventListener("keyup", keyup, true);
 
-  // disabling alpha for performance
-  ctx = canvas.getContext("2d", { alpha: false });
+  // disabling alpha for performance.... or maybe not
+  ctx = canvas.getContext("2d");
 
-  /*var img = document.getElementById("tank");
-  ctx.drawImage(img, 100, 100);*/
+  // socket stuff ////////////////////////////////////////
 
   console.log("Establishing connection...");
   socket = io({
@@ -70,8 +76,16 @@ function setup() {
     },
   });
 
-  socket.on("welcome", (me) => {
+  socket.on("welcome", (me, mapFromServer, obstaclesFromServer) => {
     player = me;
+    map = mapFromServer;
+    map.htmlImage = document.createElement("img");
+    map.htmlImage.src = `/img/${map.name}.png`;
+    obstacles = obstaclesFromServer;
+    for (const id in obstacles) {
+      obstacles[id].htmlImage = document.createElement("img");
+      obstacles[id].htmlImage.src = `/img/${obstacles[id].type}.png`;
+    }
   });
 
   socket.on("serverUpdate", (playersFromServer, bulletsFromServer) => {
@@ -107,21 +121,40 @@ function loop() {
   ctx.translate(canvas.width / 2, canvas.height / 2);
   ctx.translate(-player.x, -player.y);
 
-  for (const id in bullets) {
-    drawBullet(bullets[id]);
+  // draw map
+  if (map.htmlImage) {
+    ctx.drawImage(
+      map.htmlImage,
+      -map.width / 2,
+      -map.height / 2,
+      map.width,
+      map.height
+    );
   }
 
+  // players
   drawPlayer(player);
-
   for (const id in players) {
     if (player.id != id) {
       drawPlayer(players[id]);
     }
   }
 
+  // bullets
+  for (const id in bullets) {
+    drawBullet(bullets[id]);
+  }
+
+  // obstacles
+  for (const id in obstacles) {
+    const obs = obstacles[id];
+    if (obs.htmlImage)
+    drawObstacle(obs);
+  }
+
   ctx.restore();
 
-  // game logic
+  // game logic /////////////////////////////////////////////
 
   if (keyboard["w"]) {
     player.y -= player.speed;
@@ -200,6 +233,21 @@ function drawBullet(bullet) {
   ctx.beginPath();
   ctx.arc(0, 0, bullet.radius, 0, 2 * Math.PI);
   ctx.fill();
+
+  ctx.restore();
+}
+
+function drawObstacle(obs) {
+  ctx.save();
+  ctx.translate(obs.x, obs.y);
+
+    ctx.drawImage(
+      obs.htmlImage,
+      -obs.htmlImage.width / 2,
+      -obs.htmlImage.height / 2,
+      obs.htmlImage.width,
+      obs.htmlImage.height
+    );
 
   ctx.restore();
 }

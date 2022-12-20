@@ -22,9 +22,33 @@ app.use(express.static("public"));
 
 const updateTime = 1000 / 30;
 
+const sockets = {};
+
 const players = {};
 const bullets = {};
-const sockets = {};
+const obstacles = {};
+const map = {
+  name: "map",
+  width: 5000,
+  height: 5000,
+};
+
+function generateObstacles(count) {
+  for (let i = 0; i < count; i++) {
+    const id = genId();
+    const maxX = map.width/2;
+    const minX = -map.width/2;
+    const maxY = map.height/2;
+    const minY = -map.height/2;
+    obstacles[id] = {
+      type: "bush",
+      x: Math.random() * (maxX - minX) + minX,
+      y: Math.random() * (maxY - minY) + minY,
+    };
+  }
+}
+
+generateObstacles(32);
 
 io.on("connection", (socket) => {
   const token = socket.handshake.auth.token;
@@ -46,7 +70,7 @@ io.on("connection", (socket) => {
 
   console.log("a new player connected", players);
 
-  socket.emit("welcome", newPlayer);
+  socket.emit("welcome", newPlayer, map, obstacles);
 
   socket.on("disconnect", () => {
     delete players[socket.id];
@@ -70,7 +94,7 @@ io.on("connection", (socket) => {
       id: bulletId,
       playerId: player.id,
       angle: player.angle,
-      speed: 5,
+      speed: 16,
       x: player.x,
       y: player.y,
       radius: 6,
