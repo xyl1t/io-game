@@ -94,7 +94,7 @@ function setup() {
 
 
 function paintGrid(){
- 
+  ctx.save()
   let offset = gridOffset;
   let o = 0;
   let minus = (player.x-(window.innerWidth*Math.floor(player.x/window.innerWidth)))
@@ -118,27 +118,35 @@ function paintGrid(){
        ctx.lineTo(window.innerWidth,o-minus);
        ctx.stroke();
   }
+
+  ctx.restore()
     
 }
 
 function loop() {
   ctx.fillStyle = "#fff";
   ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);  
-  
  
   ctx.save();
   ctx.translate(canvas.width / 2, canvas.height / 2);
   ctx.translate(-player.x, -player.y);
+  
+
+ // ctx.save();
   let imageOfMap = document.createElement('img');
 
   imageOfMap.src='/img/map'+randomNumber+'.png'; 
   ctx.drawImage(imageOfMap,-2500,-2500,5000,5000);
-  paintGrid();
-  drawPlayer(player);   
-
+  
   let imageOfObstacles = document.createElement('img');
   imageOfObstacles.src = '/img/obstacles.png';
   ctx.drawImage(imageOfObstacles, -2500, -2500, 5000, 5000);
+  ctx.restore();
+  paintGrid();
+  ctx.save();
+  ctx.translate(canvas.width / 2, canvas.height / 2);
+  ctx.translate(-player.x, -player.y);
+  drawPlayer(player);   
 
   
   //draw own player first, to reduce stutter
@@ -186,7 +194,7 @@ function drawPlayer(player) {
   ctx.lineWidth = 4;
   // ctx.fillStyle = "#888";
   ctx.fillStyle = player.color;
-  //ctx.strokeStyle = "#333";
+  ctx.strokeStyle = "#333";
   ctx.strokeRect(radius * 0.8, -0.333 * radius, radius * 1.5, radius * 0.666);
   ctx.fillRect(radius * 0.8, -0.333 * radius, radius * 1.5, radius * 0.666);
 
