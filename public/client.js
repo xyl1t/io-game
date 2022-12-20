@@ -2,15 +2,15 @@
 let ctx;
 let socket;
 
-let clicks = [];
 let players = [];
+let bullets = {};
 let randomNumber = Math.floor(Math.random() * 2) + 1;
 
 const gridOffset = 80;
 const gridColor = "#f2f";
 
-var imageOfMap = null;
-var imageOfObstacles = null;
+let map = {};
+let obstacles = {};
 
 const mouse = {
   x: 0,
@@ -31,24 +31,17 @@ $(() => {
 });
 
 function setup() {
-  $('#start_game').click(onStartGame)
-
-  function onStartGame(e){
-    $('#settings_elements').css('display', 'none');
-    $('#game_elements').css('display', 'inline')
-    $('#site_wrapper').removeClass('jumbotron d-flex align-items-center vertical-center')
-    // Get the input field
-  }
-
-  var input = document.getElementById("username");
+  $("#start_game").click(startGame);
 
   // Execute a function when the user presses a key on the keyboard
-  input.addEventListener("keypress", function(event) {
-    // If the user presses the "Enter" key on the keyboard
-    if (event.key === "Enter") {
-      onStartGame(event)
-    }
-  }); 
+  document
+    .getElementById("username")
+    .addEventListener("keypress", function (event) {
+      // If the user presses the "Enter" key on the keyboard
+      if (event.key === "Enter") {
+        startGame(event);
+      }
+    });
 
   // setup client
   console.log("Loading canvas and context...");
@@ -71,16 +64,10 @@ function setup() {
   window.addEventListener("keydown", keydown, true);
   window.addEventListener("keyup", keyup, true);
 
-  // disabling alpha for performance
-  ctx = canvas.getContext("2d", { alpha: false });
+  // disabling alpha for performance.... or maybe not
+  ctx = canvas.getContext("2d");
 
-  imageOfObstacles = document.createElement('img');
-  imageOfObstacles.src = '/img/obstacles.png';
-
-  imageOfMap = document.createElement('img');
-  imageOfMap.src='/img/map'+randomNumber+'.png'; 
-  /*var img = document.getElementById("tank");
-  ctx.drawImage(img, 100, 100);*/
+  // socket stuff ////////////////////////////////////////
 
   console.log("Establishing connection...");
   socket = io({
@@ -89,101 +76,100 @@ function setup() {
     },
   });
 
-  socket.on("welcome", (me) => {
+  socket.on("welcome", (me, mapFromServer, obstaclesFromServer) => {
     player = me;
+    map = mapFromServer;
+    map.htmlImage = document.createElement("img");
+    map.htmlImage.src = `/img/${map.name}.png`;
+    obstacles = obstaclesFromServer;
+    for (const id in obstacles) {
+      obstacles[id].htmlImage = document.createElement("img");
+      obstacles[id].htmlImage.src = `/img/${obstacles[id].type}.png`;
+    }
   });
 
-  socket.on("serverUpdate", (playersFromServer) => {
+  socket.on("serverUpdate", (playersFromServer, bulletsFromServer) => {
     players = playersFromServer;
+    bullets = bulletsFromServer;
+
+    if (players[player.id]) {
+      const oldX = player.x;
+      const oldY = player.y;
+      player = players[player.id];
+      player.x = oldX;
+      player.y = oldY;
+    }
   });
 }
 
-function paintMap(){
-  ctx.save();
-  ctx.translate(canvas.width / 2, canvas.height / 2);
-  ctx.translate(-player.x, -player.y);
-  
-  console.log(imageOfMap)
-  if(imageOfMap)
-    ctx.drawImage(imageOfMap,-2500,-2500,5000,5000);
- 
-  ctx.restore();
-}
+function startGame(e) {
+  $("#settings_elements").css("display", "none");
+  $("#game_elements").css("display", "inline");
+  $("#site_wrapper").removeClass(
+    "jumbotron d-flex align-items-center vertical-center"
+  );
 
-function paintGrid(){
-  ctx.save()
-  let offset = gridOffset;
-  let o = 0;
-  let minus = (player.x-(window.innerWidth*Math.floor(player.x/window.innerWidth)))
-  
-  while(o < window.innerWidth*2){
-       o+=offset;
-       ctx.strokeStyle = gridColor
-       ctx.moveTo(o-minus, 0);
-       ctx.lineTo(o-minus,  window.innerHeight);
-       ctx.stroke();
-  }
-
-  offset = gridOffset;
-  o = 0;
-  minus = (player.y-(window.innerHeight*Math.floor(player.y/window.innerHeight)))
-  
-  while(o < window.innerWidth*2){
-       o+=offset;
-       ctx.strokeStyle = "#f2f"
-       ctx.moveTo(0,o-minus);
-       ctx.lineTo(window.innerWidth,o-minus);
-       ctx.stroke();
-  }
-
-  ctx.restore()
-    
+  player.name = $("#username").val();
+  socket.emit("join", player);
 }
 
 function loop() {
   ctx.fillStyle = "#fff";
-  ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);  
- 
-  paintMap();
-  paintGrid();
+  ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
+
   ctx.save();
   ctx.translate(canvas.width / 2, canvas.height / 2);
   ctx.translate(-player.x, -player.y);
 
-  drawPlayer(player);   
+  // draw map
+  if (map.htmlImage) {
+    ctx.drawImage(
+      map.htmlImage,
+      -map.width / 2,
+      -map.height / 2,
+      map.width,
+      map.height
+    );
+  }
 
-  //obstacles as image
-  /*if(imageOfObstacles)
-    ctx.drawImage(imageOfObstacles, -2500, -2500, 5000, 5000);*/
-
-  //draw own player first, to reduce stutter
-  
+  // players
+  drawPlayer(player);
   for (const id in players) {
     if (player.id != id) {
-      drawPlayer(players[id])
+      drawPlayer(players[id]);
     }
   }
 
+  // bullets
+  for (const id in bullets) {
+    drawBullet(bullets[id]);
+  }
 
-  // me
-  // drawPlayer({...player, x: 0, y: 0, name: "me"});
+  // obstacles
+  for (const id in obstacles) {
+    const obs = obstacles[id];
+    if (obs.htmlImage)
+    drawObstacle(obs);
+  }
 
   ctx.restore();
 
-  if (keyboard['w']) {
-    player.y -= 4;
+  // game logic /////////////////////////////////////////////
+
+  if (keyboard["w"]) {
+    player.y -= player.speed;
     socket.emit("playerUpdate", player);
   }
-  if (keyboard['s']) {
-    player.y += 4;
+  if (keyboard["s"]) {
+    player.y += player.speed;
     socket.emit("playerUpdate", player);
   }
-  if (keyboard['a']) {
-    player.x -= 4;
+  if (keyboard["a"]) {
+    player.x -= player.speed;
     socket.emit("playerUpdate", player);
   }
-  if (keyboard['d']) {
-    player.x += 4;
+  if (keyboard["d"]) {
+    player.x += player.speed;
     socket.emit("playerUpdate", player);
   }
 
@@ -223,6 +209,46 @@ function drawPlayer(player) {
     0 - ctx.measureText(player.name).width / 2,
     radius * 2
   );
+
+  const width = 100;
+  const height = 10;
+  ctx.fillStyle = "#0f0";
+  ctx.fillRect(-width / 2, -radius * 2.5, (width * player.hp) / 100, height);
+  ctx.strokeStyle = "#000";
+  ctx.strokeRect(-width / 2, -radius * 2.5, width, height);
+
+  ctx.restore();
+}
+
+function drawBullet(bullet) {
+  ctx.save();
+  // ctx.translate(bullet.x, bullet.y);
+  // ctx.rotate(bullet.angle);
+  ctx.translate(bullet.x, bullet.y);
+  // ctx.rotate(bullet.angle);
+
+  const radius = bullet.radius;
+
+  ctx.fillStyle = bullet.color;
+  ctx.beginPath();
+  ctx.arc(0, 0, bullet.radius, 0, 2 * Math.PI);
+  ctx.fill();
+
+  ctx.restore();
+}
+
+function drawObstacle(obs) {
+  ctx.save();
+  ctx.translate(obs.x, obs.y);
+
+    ctx.drawImage(
+      obs.htmlImage,
+      -obs.htmlImage.width / 2,
+      -obs.htmlImage.height / 2,
+      obs.htmlImage.width,
+      obs.htmlImage.height
+    );
+
   ctx.restore();
 }
 
@@ -233,7 +259,7 @@ function mousedown(e) {
   mouse.rightDown = (e.buttons & 2) == 2;
   console.log("Event: mousedown", mouse);
 
-  socket.emit("click", mouse);
+  socket.emit("shoot", player);
 }
 
 function mouseup(e) {
@@ -256,7 +282,7 @@ function mousemove(e) {
 
   player.angle = mouse.angle;
 
-  socket.emit("playerUpdate", player)
+  socket.emit("playerUpdate", player);
 }
 
 function wheel(e) {
@@ -285,4 +311,3 @@ function keyup(e) {
   keyboard[e.key.toLowerCase()] = false;
   console.log("up", e.key.toLowerCase());
 }
-
