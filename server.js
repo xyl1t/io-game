@@ -120,6 +120,8 @@ function serverUpdate() {
         const distance = Math.sqrt(distX * distX + distY * distY);
         if (pId != b.playerId && distance <= p.radius + b.radius) {
           p.hp -= b.damage;
+          p.color = '#FF0000';
+          setTimeout(function (){p.color = b.color}, 100);
           delete bullets[bId];
         }
       }
