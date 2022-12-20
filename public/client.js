@@ -4,6 +4,7 @@ let socket;
 
 let clicks = [];
 let players = [];
+let randomNumber = Math.floor(Math.random() * 2) + 1;
 
 const mouse = {
   x: 0,
@@ -95,7 +96,8 @@ function loop() {
   ctx.translate(canvas.width / 2, canvas.height / 2);
   ctx.translate(-player.x, -player.y);
   let imageOfMap = document.createElement('img');
-  imageOfMap.src='/img/map.png'; 
+
+  imageOfMap.src='/img/map'+randomNumber+'.png'; 
   ctx.drawImage(imageOfMap,-2500,-2500,5000,5000);
   drawPlayer(player);   
 
