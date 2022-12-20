@@ -94,7 +94,15 @@ function loop() {
   ctx.save();
   ctx.translate(canvas.width / 2, canvas.height / 2);
   ctx.translate(-player.x, -player.y);
-  drawPlayer(player);         
+  let imageOfMap = document.createElement('img');
+  imageOfMap.src='/img/map.png'; 
+  ctx.drawImage(imageOfMap,-2500,-2500,5000,5000);
+  drawPlayer(player);   
+
+  let imageOfObstecles = document.createElement('img');
+  imageOfObstecles.src = '/img/obstecles.png';
+  ctx.drawImage(imageOfObstecles, -2500, -2500, 5000, 5000);
+
   
   //draw own player first, to reduce stutter
   
@@ -141,7 +149,7 @@ function drawPlayer(player) {
   ctx.lineWidth = 4;
   // ctx.fillStyle = "#888";
   ctx.fillStyle = player.color;
-  ctx.strokeStyle = "#333";
+  //ctx.strokeStyle = "#333";
   ctx.strokeRect(radius * 0.8, -0.333 * radius, radius * 1.5, radius * 0.666);
   ctx.fillRect(radius * 0.8, -0.333 * radius, radius * 1.5, radius * 0.666);
 
