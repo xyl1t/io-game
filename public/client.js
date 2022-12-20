@@ -19,11 +19,24 @@ $(() => {
 });
 
 function setup() {
-  $('#start_game').click((e)=>{
+  $('#start_game').click(onStartGame)
+
+  function onStartGame(e){
     $('#settings_elements').css('display', 'none');
     $('#game_elements').css('display', 'inline')
     $('#site_wrapper').removeClass('jumbotron d-flex align-items-center vertical-center')
-  })
+    // Get the input field
+  }
+
+  var input = document.getElementById("username");
+
+  // Execute a function when the user presses a key on the keyboard
+  input.addEventListener("keypress", function(event) {
+    // If the user presses the "Enter" key on the keyboard
+    if (event.key === "Enter") {
+      onStartGame(event)
+    }
+  }); 
 
   // setup client
   console.log("Loading canvas and context...");
