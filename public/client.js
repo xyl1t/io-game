@@ -101,9 +101,9 @@ function loop() {
   ctx.drawImage(imageOfMap,-2500,-2500,5000,5000);
   drawPlayer(player);   
 
-  let imageOfObstecles = document.createElement('img');
-  imageOfObstecles.src = '/img/obstecles.png';
-  ctx.drawImage(imageOfObstecles, -2500, -2500, 5000, 5000);
+  let imageOfObstacles = document.createElement('img');
+  imageOfObstacles.src = '/img/obstacles.png';
+  ctx.drawImage(imageOfObstacles, -2500, -2500, 5000, 5000);
 
   
   //draw own player first, to reduce stutter
