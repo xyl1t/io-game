@@ -2,8 +2,8 @@
 let ctx;
 let socket;
 
-let clicks = [];
-let players = [];
+let players = {};
+let bullets = {};
 
 const mouse = {
   x: 0,
@@ -24,7 +24,7 @@ $(() => {
 });
 
 function setup() {
-  $('#start_game').click(onStartGame)
+  $("#start_game").click(onStartGame);
 
   $('#username').keypress((e) => {
     if (e.key === "Enter") {
@@ -42,7 +42,18 @@ function setup() {
     $('#game_elements').css('display', 'inline')
     $('#site_wrapper').removeClass('jumbotron d-flex align-items-center vertical-center')
     // Get the input field
+    player.name = $("username").val();
   }
+
+  var input = document.getElementById("username");
+
+  // Execute a function when the user presses a key on the keyboard
+  input.addEventListener("keypress", function (event) {
+    // If the user presses the "Enter" key on the keyboard
+    if (event.key === "Enter") {
+      onStartGame(event);
+    }
+  });
 
   // setup client
   console.log("Loading canvas and context...");
@@ -83,8 +94,15 @@ function setup() {
     player = me;
   });
 
-  socket.on("serverUpdate", (playersFromServer) => {
+  socket.on("serverUpdate", (playersFromServer, bulletsFromServer) => {
     players = playersFromServer;
+    bullets = bulletsFromServer;
+
+    const oldX = player.x;
+    const oldY = player.y;
+    player = players[player.id];
+    player.x = oldX;
+    player.y = oldY;
   });
 }
 
@@ -92,41 +110,40 @@ function loop() {
   ctx.fillStyle = "#fff";
   ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
 
-
   ctx.save();
   ctx.translate(canvas.width / 2, canvas.height / 2);
   ctx.translate(-player.x, -player.y);
-  drawPlayer(player);         
-  
-  //draw own player first, to reduce stutter
-  
+
+  for (const id in bullets) {
+    drawBullet(bullets[id]);
+  }
+
+  drawPlayer(player);
+
   for (const id in players) {
     if (player.id != id) {
-      drawPlayer(players[id])
+      drawPlayer(players[id]);
     }
   }
 
-
-
-  // me
-  // drawPlayer({...player, x: 0, y: 0, name: "me"});
-
   ctx.restore();
 
-  if (keyboard['w']) {
-    player.y -= 4;
+  // game logic
+
+  if (keyboard["w"]) {
+    player.y -= player.speed;
     socket.emit("playerUpdate", player);
   }
-  if (keyboard['s']) {
-    player.y += 4;
+  if (keyboard["s"]) {
+    player.y += player.speed;
     socket.emit("playerUpdate", player);
   }
-  if (keyboard['a']) {
-    player.x -= 4;
+  if (keyboard["a"]) {
+    player.x -= player.speed;
     socket.emit("playerUpdate", player);
   }
-  if (keyboard['d']) {
-    player.x += 4;
+  if (keyboard["d"]) {
+    player.x += player.speed;
     socket.emit("playerUpdate", player);
   }
 
@@ -166,6 +183,31 @@ function drawPlayer(player) {
     0 - ctx.measureText(player.name).width / 2,
     radius * 2
   );
+
+  const width = 100;
+  const height = 10;
+  ctx.fillStyle = "#0f0";
+  ctx.fillRect(-width / 2, -radius * 2.5, (width * player.hp) / 100, height);
+  ctx.strokeStyle = "#000";
+  ctx.strokeRect(-width / 2, -radius * 2.5, width, height);
+
+  ctx.restore();
+}
+
+function drawBullet(bullet) {
+  ctx.save();
+  // ctx.translate(bullet.x, bullet.y);
+  // ctx.rotate(bullet.angle);
+  ctx.translate(bullet.x, bullet.y);
+  // ctx.rotate(bullet.angle);
+
+  const radius = bullet.radius;
+
+  ctx.fillStyle = bullet.color;
+  ctx.beginPath();
+  ctx.arc(0, 0, bullet.radius, 0, 2 * Math.PI);
+  ctx.fill();
+
   ctx.restore();
 }
 
@@ -176,7 +218,7 @@ function mousedown(e) {
   mouse.rightDown = (e.buttons & 2) == 2;
   console.log("Event: mousedown", mouse);
 
-  socket.emit("click", mouse);
+  socket.emit("shoot", player);
 }
 
 function mouseup(e) {
@@ -199,7 +241,7 @@ function mousemove(e) {
 
   player.angle = mouse.angle;
 
-  socket.emit("playerUpdate", player)
+  socket.emit("playerUpdate", player);
 }
 
 function wheel(e) {
@@ -228,4 +270,3 @@ function keyup(e) {
   keyboard[e.key.toLowerCase()] = false;
   console.log("up", e.key.toLowerCase());
 }
-
