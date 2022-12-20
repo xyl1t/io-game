@@ -152,8 +152,9 @@ function loop() {
 
   drawPlayer(player);   
 
-  if(imageOfObstacles)
-    ctx.drawImage(imageOfObstacles, -2500, -2500, 5000, 5000);
+  //obstacles as image
+  /*if(imageOfObstacles)
+    ctx.drawImage(imageOfObstacles, -2500, -2500, 5000, 5000);*/
 
   //draw own player first, to reduce stutter
   
