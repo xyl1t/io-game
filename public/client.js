@@ -19,6 +19,12 @@ $(() => {
 });
 
 function setup() {
+  $('#start_game').click((e)=>{
+    $('#settings_elements').css('display', 'none');
+    $('#game_elements').css('display', 'inline')
+    $('#site_wrapper').removeClass('jumbotron d-flex align-items-center vertical-center')
+  })
+
   // setup client
   console.log("Loading canvas and context...");
   const canvas = document.querySelector("#canvas");
@@ -39,6 +45,9 @@ function setup() {
 
   // disabling alpha for performance
   ctx = canvas.getContext("2d", { alpha: false });
+
+  /*var img = document.getElementById("tank");
+  ctx.drawImage(img, 100, 100);*/
 
   console.log("Establishing connection...");
   socket = io({
@@ -108,3 +117,4 @@ function wheel(e) {
 
   console.log("Event: wheel", mouseInfo);
 }
+
