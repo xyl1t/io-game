@@ -4,6 +4,7 @@ let socket;
 
 let clicks = [];
 let players = [];
+let randomNumber = Math.floor(Math.random() * 2) + 1;
 
 const gridOffset = 80;
 const gridColor = "#f2f";
@@ -128,8 +129,17 @@ function loop() {
   ctx.save();
   ctx.translate(canvas.width / 2, canvas.height / 2);
   ctx.translate(-player.x, -player.y);
+  let imageOfMap = document.createElement('img');
+
+  imageOfMap.src='/img/map'+randomNumber+'.png'; 
+  ctx.drawImage(imageOfMap,-2500,-2500,5000,5000);
   paintGrid();
-  drawPlayer(player);         
+  drawPlayer(player);   
+
+  let imageOfObstacles = document.createElement('img');
+  imageOfObstacles.src = '/img/obstacles.png';
+  ctx.drawImage(imageOfObstacles, -2500, -2500, 5000, 5000);
+
   
   //draw own player first, to reduce stutter
   
@@ -176,7 +186,7 @@ function drawPlayer(player) {
   ctx.lineWidth = 4;
   // ctx.fillStyle = "#888";
   ctx.fillStyle = player.color;
-  ctx.strokeStyle = "#333";
+  //ctx.strokeStyle = "#333";
   ctx.strokeRect(radius * 0.8, -0.333 * radius, radius * 1.5, radius * 0.666);
   ctx.fillRect(radius * 0.8, -0.333 * radius, radius * 1.5, radius * 0.666);
 
