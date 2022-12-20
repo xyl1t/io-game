@@ -38,3 +38,11 @@
 #scores{
   height: 100%;
 }
+
+.dim {
+  /* For Internet Explorer */
+  box-shadow: 0 0 0 1000px rgba(0, 0, 0, .3);
+    
+  /* For other browsers */
+  box-shadow: 0 0 0 100vmax rgba(0, 0, 0, .3);
+}

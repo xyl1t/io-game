@@ -27,6 +27,11 @@ function setup() {
     }
   }); 
 
+  $('#died').click(()=>{
+    console.log('clicked on died')
+    $('#site_wrapper').addClass("dim");
+  })
+
   function onStartGame(e){
     $('#settings_elements').css('display', 'none');
     $('#game_elements').css('display', 'inline')
@@ -67,6 +72,12 @@ function setup() {
 
   socket.on("serverUpdate", clicksFromServer => {
     clicks = clicksFromServer
+  })
+
+  socket.on("players", players => {
+    $('#server_info').empty()
+    for (let player of players)
+      $('#server_info').append(`<p>${player}</p>`)
   })
 }
 
