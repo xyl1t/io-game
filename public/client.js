@@ -68,15 +68,21 @@ function loop() {
   ctx.fillStyle = "#fff";
   ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
 
+
   ctx.save();
   ctx.translate(canvas.width / 2, canvas.height / 2);
   ctx.translate(-player.x, -player.y);
-
+  drawPlayer(player);         
+  
+  //draw own player first, to reduce stutter
+  
   for (const id in players) {
-    // if (player.id != id) {
+    if (player.id != id) {
       drawPlayer(players[id])
-    // }
+    }
   }
+
+
 
   // me
   // drawPlayer({...player, x: 0, y: 0, name: "me"});
