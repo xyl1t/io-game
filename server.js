@@ -36,10 +36,10 @@ const map = {
 function generateObstacles(count) {
   for (let i = 0; i < count; i++) {
     const id = genId();
-    const maxX = map.width/2;
-    const minX = -map.width/2;
-    const maxY = map.height/2;
-    const minY = -map.height/2;
+    const maxX = map.width / 2;
+    const minX = -map.width / 2;
+    const maxY = map.height / 2;
+    const minY = -map.height / 2;
     obstacles[id] = {
       type: "bush",
       x: Math.random() * (maxX - minX) + minX,
@@ -120,6 +120,15 @@ function serverUpdate() {
         const distance = Math.sqrt(distX * distX + distY * distY);
         if (pId != b.playerId && distance <= p.radius + b.radius) {
           p.hp -= b.damage;
+          const origColor = p.color;
+          p.color = "#FF0000";
+
+          const myTimeout = setTimeout(()=> {
+            p.color = origColor;
+            console.log("test");
+            clearTimeout(myTimeout);
+          }, 100);
+
           delete bullets[bId];
         }
       }
