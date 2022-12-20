@@ -24,27 +24,17 @@ $(() => {
 });
 
 function setup() {
-  $("#start_game").click(onStartGame);
-
-  function onStartGame(e) {
-    $("#settings_elements").css("display", "none");
-    $("#game_elements").css("display", "inline");
-    $("#site_wrapper").removeClass(
-      "jumbotron d-flex align-items-center vertical-center"
-    );
-    // Get the input field
-    player.name = $("username").val();
-  }
-
-  var input = document.getElementById("username");
+  $("#start_game").click(startGame);
 
   // Execute a function when the user presses a key on the keyboard
-  input.addEventListener("keypress", function (event) {
-    // If the user presses the "Enter" key on the keyboard
-    if (event.key === "Enter") {
-      onStartGame(event);
-    }
-  });
+  document
+    .getElementById("username")
+    .addEventListener("keypress", function (event) {
+      // If the user presses the "Enter" key on the keyboard
+      if (event.key === "Enter") {
+        startGame(event);
+      }
+    });
 
   // setup client
   console.log("Loading canvas and context...");
@@ -88,12 +78,25 @@ function setup() {
     players = playersFromServer;
     bullets = bulletsFromServer;
 
-    const oldX = player.x;
-    const oldY = player.y;
-    player = players[player.id];
-    player.x = oldX;
-    player.y = oldY;
+    if (players[player.id]) {
+      const oldX = player.x;
+      const oldY = player.y;
+      player = players[player.id];
+      player.x = oldX;
+      player.y = oldY;
+    }
   });
+}
+
+function startGame(e) {
+  $("#settings_elements").css("display", "none");
+  $("#game_elements").css("display", "inline");
+  $("#site_wrapper").removeClass(
+    "jumbotron d-flex align-items-center vertical-center"
+  );
+
+  player.name = $("#username").val();
+  socket.emit("join", player);
 }
 
 function loop() {
