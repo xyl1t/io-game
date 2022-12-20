@@ -5,6 +5,9 @@ let socket;
 let clicks = [];
 let players = [];
 
+const gridOffset = 80;
+const gridColor = "#f2f";
+
 const mouse = {
   x: 0,
   y: 0,
@@ -67,6 +70,8 @@ function setup() {
   // disabling alpha for performance
   ctx = canvas.getContext("2d", { alpha: false });
 
+  paintGrid()
+
   /*var img = document.getElementById("tank");
   ctx.drawImage(img, 100, 100);*/
 
@@ -86,14 +91,44 @@ function setup() {
   });
 }
 
+
+function paintGrid(){
+ 
+  let offset = gridOffset;
+  let o = 0;
+  let minus = (player.x-(window.innerWidth*Math.floor(player.x/window.innerWidth)))
+  
+  while(o < window.innerWidth*2){
+       o+=offset;
+       ctx.strokeStyle = gridColor
+       ctx.moveTo(o-minus, 0);
+       ctx.lineTo(o-minus,  window.innerHeight);
+       ctx.stroke();
+  }
+
+  offset = gridOffset;
+  o = 0;
+  minus = (player.y-(window.innerHeight*Math.floor(player.y/window.innerHeight)))
+  
+  while(o < window.innerWidth*2){
+       o+=offset;
+       ctx.strokeStyle = "#f2f"
+       ctx.moveTo(0,o-minus);
+       ctx.lineTo(window.innerWidth,o-minus);
+       ctx.stroke();
+  }
+    
+}
+
 function loop() {
   ctx.fillStyle = "#fff";
-  ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
-
-
+  ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);  
+  
+ 
   ctx.save();
   ctx.translate(canvas.width / 2, canvas.height / 2);
   ctx.translate(-player.x, -player.y);
+  paintGrid();
   drawPlayer(player);         
   
   //draw own player first, to reduce stutter
