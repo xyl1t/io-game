@@ -1,0 +1,23 @@
+* {
+  font-family: "Arial";
+  font-family: "Arial";
+  cursor: url(http://www.rw-designer.com/cursor-extern.php?id=150930), auto;
+}
+
+.vertical-center {
+    min-height: 100%;  /* Fallback for browsers do NOT support vh unit */
+    min-height: 100vh; /* These two lines are counted as one :-)       */
+  
+    display: flex;
+    align-items: center;
+  }
+
+  /*#game_elements {
+    position: absolute !important;
+    top: 0;
+    left: 0;
+    opacity: 0;
+}*/
+#game_elements {
+    display:none;
+}
