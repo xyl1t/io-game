@@ -63,7 +63,7 @@ io.on("connection", (socket) => {
     radius: 16,
     name: "",
     hp: 100,
-    speed: 3,
+    speed: 3
   };
 
   sockets[newPlayer.id] = socket;

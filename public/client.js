@@ -25,6 +25,9 @@ const keyboard = {};
 
 let player = {};
 
+let curTime = Date.now()
+let lastTime = Date.now()
+
 $(() => {
   setup();
   loop();
@@ -156,20 +159,25 @@ function loop() {
 
   // game logic /////////////////////////////////////////////
 
+
+  lastTime = curTime;
+  curTime = Date.now()
+  const deltaTime = (curTime - lastTime) / 10
+
   if (keyboard["w"]) {
-    player.y -= player.speed;
+    player.y -= player.speed * deltaTime;
     socket.emit("playerUpdate", player);
   }
   if (keyboard["s"]) {
-    player.y += player.speed;
+    player.y += player.speed * deltaTime;
     socket.emit("playerUpdate", player);
   }
   if (keyboard["a"]) {
-    player.x -= player.speed;
+    player.x -= player.speed * deltaTime;
     socket.emit("playerUpdate", player);
   }
   if (keyboard["d"]) {
-    player.x += player.speed;
+    player.x += player.speed * deltaTime;
     socket.emit("playerUpdate", player);
   }
 
