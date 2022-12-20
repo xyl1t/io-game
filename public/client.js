@@ -132,21 +132,25 @@ function loop() {
   ctx.translate(-player.x, -player.y);
   
 
- // ctx.save();
   let imageOfMap = document.createElement('img');
 
   imageOfMap.src='/img/map'+randomNumber+'.png'; 
   ctx.drawImage(imageOfMap,-2500,-2500,5000,5000);
   
-  let imageOfObstacles = document.createElement('img');
-  imageOfObstacles.src = '/img/obstacles.png';
-  ctx.drawImage(imageOfObstacles, -2500, -2500, 5000, 5000);
+ 
   ctx.restore();
   paintGrid();
   ctx.save();
   ctx.translate(canvas.width / 2, canvas.height / 2);
   ctx.translate(-player.x, -player.y);
+
   drawPlayer(player);   
+
+  let imageOfObstacles = document.createElement('img');
+  imageOfObstacles.src = '/img/obstacles.png';
+  ctx.drawImage(imageOfObstacles, -2500, -2500, 5000, 5000);
+  
+  
 
   
   //draw own player first, to reduce stutter
