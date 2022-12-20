@@ -42,7 +42,7 @@ function setup() {
     $('#game_elements').css('display', 'inline')
     $('#site_wrapper').removeClass('jumbotron d-flex align-items-center vertical-center')
     // Get the input field
-    player.name = $("username").val();
+    player.name = $("#username").val();
   }
 
   var input = document.getElementById("username");
@@ -103,6 +103,7 @@ function setup() {
     player = players[player.id];
     player.x = oldX;
     player.y = oldY;
+    $('#server_info').append(`<p>Player: ${player.name}</p>`)
   });
 }
 
