@@ -20,7 +20,7 @@ const io = new Server(server);
 
 app.use(express.static("public"));
 
-const updateTime = 1000/30;
+const updateTime = 1000 / 30;
 
 const players = {};
 const bullets = {};
@@ -41,7 +41,7 @@ io.on("connection", (socket) => {
     hp: 100,
     speed: 3,
   };
-  players[newPlayer.id] = newPlayer;
+
   sockets[newPlayer.id] = socket;
 
   console.log("a new player connected", players);
@@ -52,6 +52,11 @@ io.on("connection", (socket) => {
     delete players[socket.id];
     delete sockets[socket.id];
     console.log("a player disconnected", players);
+  });
+
+  socket.on("join", (player) => {
+    players[player.id] = player;
+    socket.broadcast.emit("playerJoin", player); // not yet handled in client
   });
 
   socket.on("playerUpdate", (player) => {
@@ -65,20 +70,20 @@ io.on("connection", (socket) => {
       id: bulletId,
       playerId: player.id,
       angle: player.angle,
-      speed:5,
+      speed: 5,
       x: player.x,
       y: player.y,
-      radius: 8,
+      radius: 6,
       color: player.color,
       range: 1000, // pixels
       damage: 10, // hp
-    }
+    };
   });
 });
 
 function serverUpdate() {
   for (const bId in bullets) {
-    const b = bullets[bId]
+    const b = bullets[bId];
     b.range -= b.speed;
     if (b.range > 0) {
       b.x += b.speed * Math.cos(b.angle);
@@ -88,14 +93,12 @@ function serverUpdate() {
         const p = players[pId];
         const distX = p.x - b.x;
         const distY = p.y - b.y;
-        const distance = Math.sqrt((distX*distX) + (distY*distY));
+        const distance = Math.sqrt(distX * distX + distY * distY);
         if (pId != b.playerId && distance <= p.radius + b.radius) {
           p.hp -= b.damage;
           delete bullets[bId];
         }
       }
-
-
     } else {
       delete bullets[bId];
     }
