@@ -153,7 +153,7 @@ function serverUpdate() {
           const myTimeout = setTimeout(() => {
             p.color = origColor;
             clearTimeout(myTimeout);
-          );
+          });
 
           delete bullets[bId];
         }
