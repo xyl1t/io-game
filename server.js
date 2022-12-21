@@ -33,6 +33,9 @@ const map = {
   height: 5000,
 };
 
+const millisBetweenShots = 100;
+const timesOfLastShots = {};
+
 function generateObstacles(count) {
   for (let i = 0; i < count; i++) {
     const id = genId();
@@ -78,6 +81,7 @@ io.on("connection", (socket) => {
   socket.emit("welcome", newPlayer, map, obstacles);
 
   socket.on("disconnect", () => {
+    delete timesOfLastShots[socket.id];
     delete players[socket.id];
     delete sockets[socket.id];
     console.log("a player disconnected", players);
@@ -85,6 +89,7 @@ io.on("connection", (socket) => {
 
   socket.on("join", (player) => {
     players[player.id] = player;
+    timesOfLastShots[player.id] = 0;
     socket.broadcast.emit("playerJoin", player); // not yet handled in client
   });
 
@@ -94,19 +99,22 @@ io.on("connection", (socket) => {
   });
 
   socket.on("shoot", (player) => {
-    const bulletId = genId();
-    bullets[bulletId] = {
-      id: bulletId,
-      playerId: player.id,
-      angle: player.angle,
-      speed: 16,
-      x: player.x,
-      y: player.y,
-      radius: 6,
-      color: player.color,
-      range: 1000, // pixels
-      damage: 10, // hp
-    };
+    if(Date.now() - timesOfLastShots[player.id] > millisBetweenShots) {
+      const bulletId = genId();
+      bullets[bulletId] = {
+        id: bulletId,
+        playerId: player.id,
+        angle: player.angle,
+        speed: 16,
+        x: player.x,
+        y: player.y,
+        radius: 6,
+        color: player.color,
+        range: 1000, // pixels
+        damage: 10, // hp
+      };
+      timesOfLastShots[player.id] = Date.now();
+    }
   });
 
 });
