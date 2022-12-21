@@ -4,6 +4,14 @@ let socket;
 
 let players = {};
 let bullets = {};
+let randomNumber = Math.floor(Math.random() * 2) + 1;
+
+const gridOffset = 80;
+const gridColor = "#f2f";
+
+let map = {};
+let obstacles = {};
+let visibleObstacleIds = {};
 
 const mouse = {
   x: 0,
@@ -18,42 +26,27 @@ const keyboard = {};
 
 let player = {};
 
+let curTime = Date.now()
+let lastTime = Date.now()
+
 $(() => {
   setup();
   loop();
 });
 
 function setup() {
-  $("#start_game").click(onStartGame);
 
-  $('#username').keypress((e) => {
-    if (e.key === "Enter") {
-      onStartGame(e)
-    }
-  }); 
-
-  $('#died').click(()=>{
-    console.log('clicked on died')
-    $('#site_wrapper').addClass("dim");
-  })
-
-  function onStartGame(e){
-    $('#settings_elements').css('display', 'none');
-    $('#game_elements').css('display', 'inline')
-    $('#site_wrapper').removeClass('jumbotron d-flex align-items-center vertical-center')
-    // Get the input field
-    player.name = $("#username").val();
-  }
-
-  var input = document.getElementById("username");
+  $("#start_game").click(startGame);
 
   // Execute a function when the user presses a key on the keyboard
-  input.addEventListener("keypress", function (event) {
-    // If the user presses the "Enter" key on the keyboard
-    if (event.key === "Enter") {
-      onStartGame(event);
-    }
-  });
+  document
+    .getElementById("username")
+    .addEventListener("keypress", function (event) {
+      // If the user presses the "Enter" key on the keyboard
+      if (event.key === "Enter") {
+        startGame(event);
+      }
+    });
 
   // setup client
   console.log("Loading canvas and context...");
@@ -76,38 +69,70 @@ function setup() {
   window.addEventListener("keydown", keydown, true);
   window.addEventListener("keyup", keyup, true);
 
-  // disabling alpha for performance
-  ctx = canvas.getContext("2d", { alpha: false });
+  // disabling alpha for performance.... or maybe not
+  ctx = canvas.getContext("2d");
 
-  /*var img = document.getElementById("tank");
-  ctx.drawImage(img, 100, 100);*/
+  // socket stuff ////////////////////////////////////////
 
   console.log("Establishing connection...");
   socket = io({
     auth: {
-      token: "actualUser", // autherize as a legit user
+      token: "actualUser", // authorize as a legit user
     },
+    query: {
+      screenWidth: window.innerWidth,
+      screenHeight: window.innerHeight
+    }
   });
 
 
-  socket.on("welcome", (me) => {
+  socket.on("welcome", (me, mapFromServer, obstaclesFromServer) => {
     player = me;
+    map = mapFromServer;
+    map.htmlImage = document.createElement("img");
+    map.htmlImage.src = `/img/${map.name}.png`;
+    obstacles = obstaclesFromServer;
+    for (const id in obstacles) {
+      obstacles[id].htmlImage = document.createElement("img");
+      obstacles[id].htmlImage.src = `/img/${obstacles[id].type}.png`;
+    }
   });
 
-  socket.on("serverUpdate", (playersFromServer, bulletsFromServer) => {
+  socket.on("serverUpdate", (playersFromServer, bulletsFromServer, obstacleIds) => {
     players = playersFromServer;
     bullets = bulletsFromServer;
+    visibleObstacleIds = obstacleIds;
 
     const oldX = player.x;
     const oldY = player.y;
     player = players[player.id];
     player.x = oldX;
     player.y = oldY;
-    $('#server_info').append(`<p>Player: ${player.name}</p>`)
+
+    if (players[player.id]) {
+      const oldX = player.x;
+      const oldY = player.y;
+      player = players[player.id];
+      player.x = oldX;
+      player.y = oldY;
+    }
+
   });
 }
 
+function startGame(e) {
+  $("#settings_elements").css("display", "none");
+  $("#game_elements").css("display", "inline");
+  $("#site_wrapper").removeClass(
+    "jumbotron d-flex align-items-center vertical-center"
+  );
+
+  player.name = $("#username").val();
+  socket.emit("join", player);
+}
+
 function loop() {
+
   ctx.fillStyle = "#fff";
   ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
 
@@ -115,38 +140,67 @@ function loop() {
   ctx.translate(canvas.width / 2, canvas.height / 2);
   ctx.translate(-player.x, -player.y);
 
-  for (const id in bullets) {
-    drawBullet(bullets[id]);
+  // draw map
+  if (map.htmlImage) {
+    ctx.drawImage(
+      map.htmlImage,
+      -map.width / 2,
+      -map.height / 2,
+      map.width,
+      map.height
+    );
   }
 
+  // players
   drawPlayer(player);
-
   for (const id in players) {
     if (player.id != id) {
       drawPlayer(players[id]);
     }
   }
 
+  // bullets
+  for (const id in bullets) {
+    drawBullet(bullets[id]);
+  }
+
+  // obstacles
+  for (const id in visibleObstacleIds) {
+    if(obstacles[id]){
+      const obs = obstacles[id];
+      if (obs.htmlImage)
+      drawObstacle(obs);
+    }
+  }
+
   ctx.restore();
 
-  // game logic
+  // game logic /////////////////////////////////////////////
+
+
+  lastTime = curTime;
+  curTime = Date.now()
+  const deltaTime = (curTime - lastTime) / 10
 
   if (keyboard["w"]) {
-    player.y -= player.speed;
+    player.y -= player.speed * deltaTime;
     socket.emit("playerUpdate", player);
   }
   if (keyboard["s"]) {
-    player.y += player.speed;
+    player.y += player.speed * deltaTime;
     socket.emit("playerUpdate", player);
   }
   if (keyboard["a"]) {
-    player.x -= player.speed;
+    player.x -= player.speed * deltaTime;
     socket.emit("playerUpdate", player);
   }
   if (keyboard["d"]) {
-    player.x += player.speed;
+    player.x += player.speed * deltaTime;
     socket.emit("playerUpdate", player);
   }
+
+  player.screenWidth = window.innerWidth;
+  player.screenHeight = window.innerHeight;
 
   window.requestAnimationFrame(loop);
 }
@@ -160,7 +214,7 @@ function drawPlayer(player) {
 
   ctx.lineWidth = 4;
   // ctx.fillStyle = "#888";
-  ctx.fillStyle = player.color;
+  ctx.fillStyle = player.specialColor ?? player.color;
   ctx.strokeStyle = "#333";
   ctx.strokeRect(radius * 0.8, -0.333 * radius, radius * 1.5, radius * 0.666);
   ctx.fillRect(radius * 0.8, -0.333 * radius, radius * 1.5, radius * 0.666);
@@ -169,7 +223,7 @@ function drawPlayer(player) {
   ctx.arc(0, 0, radius, 0, 2 * Math.PI);
   ctx.stroke();
 
-  ctx.fillStyle = player.color;
+  ctx.fillStyle = player.specialColor ?? player.color;
   ctx.beginPath();
   ctx.arc(0, 0, radius, 0, 2 * Math.PI);
   ctx.fill();
@@ -208,6 +262,21 @@ function drawBullet(bullet) {
   ctx.beginPath();
   ctx.arc(0, 0, bullet.radius, 0, 2 * Math.PI);
   ctx.fill();
+
+  ctx.restore();
+}
+
+function drawObstacle(obs) {
+  ctx.save();
+  ctx.translate(obs.x, obs.y);
+
+    ctx.drawImage(
+      obs.htmlImage,
+      -obs.htmlImage.width / 2,
+      -obs.htmlImage.height / 2,
+      obs.htmlImage.width,
+      obs.htmlImage.height
+    );
 
   ctx.restore();
 }
