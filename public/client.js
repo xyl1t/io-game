@@ -29,9 +29,6 @@ let player = {};
 let curTime = Date.now()
 let lastTime = Date.now()
 
-let timeOfLastShot = 0;
-const millisBetweenShots = 100;
-
 $(() => {
   setup();
   loop();
@@ -281,10 +278,8 @@ function mousedown(e) {
   mouse.rightDown = (e.buttons & 2) == 2;
   console.log("Event: mousedown", mouse);
 
-  if(Date.now() - timeOfLastShot > millisBetweenShots) {
-    socket.emit("shoot", player);
-    timeOfLastShot = Date.now();
-  }}
+  socket.emit("shoot", player);
+}
 
 function mouseup(e) {
   mouse.x = e.pageX - canvas.offsetLeft;
