@@ -117,7 +117,8 @@ function setup() {
       
     }
     $('#leaderboard').html(strToDisplay)
-    
+  });
+
   socket.on("died", () => {
     $("#game_elements").css("display", "none");
     $("#settings_elements").css("display", "inline");
@@ -126,8 +127,8 @@ function setup() {
       "jumbotron d-flex align-items-center vertical-center"
     );
     $("#deathText").css("display", "block");
-
   });
+  
 }
 
 function startGame(e) {
