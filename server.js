@@ -89,7 +89,6 @@ io.on("connection", (socket) => {
   sockets[newPlayer.id] = socket;
   console.log("a new player connected", players);
   socket.emit("welcome", newPlayer, map, obstacles, obstaclesMap);
-  socket.emit("welcome", newPlayer, map, obstacles);
 
   socket.on("disconnect", () => {
     delete timesOfLastShots[socket.id];
