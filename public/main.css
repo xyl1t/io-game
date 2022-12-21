@@ -21,3 +21,7 @@
 #game_elements {
     display:none;
 }
+
+body{
+  overflow: hidden;
+}

@@ -2,7 +2,7 @@
 let ctx;
 let socket;
 
-let players = [];
+let players = {};
 let bullets = {};
 let randomNumber = Math.floor(Math.random() * 2) + 1;
 
@@ -11,6 +11,7 @@ const gridColor = "#f2f";
 
 let map = {};
 let obstacles = {};
+let visibleObstacleIds = {};
 
 const mouse = {
   x: 0,
@@ -75,8 +76,12 @@ function setup() {
   console.log("Establishing connection...");
   socket = io({
     auth: {
-      token: "actualUser", // autherize as a legit user
+      token: "actualUser", // authorize as a legit user
     },
+    query: {
+      screenWidth: window.innerWidth,
+      screenHeight: window.innerHeight
+    }
   });
 
   socket.on("welcome", (me, mapFromServer, obstaclesFromServer) => {
@@ -91,9 +96,10 @@ function setup() {
     }
   });
 
-  socket.on("serverUpdate", (playersFromServer, bulletsFromServer) => {
+  socket.on("serverUpdate", (playersFromServer, bulletsFromServer, obstacleIds) => {
     players = playersFromServer;
     bullets = bulletsFromServer;
+    visibleObstacleIds = obstacleIds;
 
     if (players[player.id]) {
       const oldX = player.x;
@@ -117,6 +123,9 @@ function startGame(e) {
 }
 
 function loop() {
+
+  let tStart = new Date();
+
   ctx.fillStyle = "#fff";
   ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
 
@@ -149,10 +158,12 @@ function loop() {
   }
 
   // obstacles
-  for (const id in obstacles) {
-    const obs = obstacles[id];
-    if (obs.htmlImage)
-    drawObstacle(obs);
+  for (const id in visibleObstacleIds) {
+    if(obstacles[id]){
+      const obs = obstacles[id];
+      if (obs.htmlImage)
+      drawObstacle(obs);
+    }
   }
 
   ctx.restore();
@@ -180,6 +191,9 @@ function loop() {
     player.x += player.speed * deltaTime;
     socket.emit("playerUpdate", player);
   }
+
+  player.screenWidth = window.innerWidth;         //adjust render distance to window
+  player.screenHeight = window.innerHeight;
 
   window.requestAnimationFrame(loop);
 }

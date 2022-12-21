@@ -1,7 +1,7 @@
 /*************************************************************************** */
 /*                          IO-Game over WebSockets                          */
 /*                                                                           */
-/*  Marat Isaw, Benjamin Terbul, Justus Arndt, Paul Trattnig, Thmoas Fischer */
+/*  Marat Isaw, Benjamin Terbul, Justus Arndt, Paul Trattnig, Thomas Fischer */
 /*  HTL Villach - Abteilung Informatik - 4AHIF                               */
 /*  (c) 2022/23                                                              */
 /*************************************************************************** */
@@ -33,6 +33,9 @@ const map = {
   height: 5000,
 };
 
+const millisBetweenShots = 100;
+const timesOfLastShots = {};
+
 function generateObstacles(count) {
   for (let i = 0; i < count; i++) {
     const id = genId();
@@ -41,9 +44,12 @@ function generateObstacles(count) {
     const maxY = map.height / 2;
     const minY = -map.height / 2;
     obstacles[id] = {
+      id: id,
       type: "bush",
       x: Math.random() * (maxX - minX) + minX,
       y: Math.random() * (maxY - minY) + minY,
+      sizeX: 180,
+      sizeY: 180
     };
   }
 }
@@ -58,6 +64,8 @@ io.on("connection", (socket) => {
     id: socket.id,
     x: 0,
     y: 0,
+    screenWidth: socket.handshake.query.screenWidth,
+    screenHeight: socket.handshake.query.screenHeight,
     color: getRandomColor(),
     specialColor: undefined,
     angle: 0,
@@ -68,12 +76,13 @@ io.on("connection", (socket) => {
   };
 
   sockets[newPlayer.id] = socket;
-
+  
   console.log("a new player connected", players);
 
   socket.emit("welcome", newPlayer, map, obstacles);
 
   socket.on("disconnect", () => {
+    delete timesOfLastShots[socket.id];
     delete players[socket.id];
     delete sockets[socket.id];
     console.log("a player disconnected", players);
@@ -81,6 +90,7 @@ io.on("connection", (socket) => {
 
   socket.on("join", (player) => {
     players[player.id] = player;
+    timesOfLastShots[player.id] = 0;
     socket.broadcast.emit("playerJoin", player); // not yet handled in client
   });
 
@@ -94,23 +104,28 @@ io.on("connection", (socket) => {
   });
 
   socket.on("shoot", (player) => {
-    const bulletId = genId();
-    bullets[bulletId] = {
-      id: bulletId,
-      playerId: player.id,
-      angle: player.angle,
-      speed: 16,
-      x: player.x,
-      y: player.y,
-      radius: 6,
-      color: player.color,
-      range: 1000, // pixels
-      damage: 10, // hp
-    };
+    if(Date.now() - timesOfLastShots[player.id] > millisBetweenShots) {
+      const bulletId = genId();
+      bullets[bulletId] = {
+        id: bulletId,
+        playerId: player.id,
+        angle: player.angle,
+        speed: 16,
+        x: player.x,
+        y: player.y,
+        radius: 6,
+        color: player.color,
+        range: 1000, // pixels
+        damage: 10, // hp
+      };
+      timesOfLastShots[player.id] = Date.now();
+    }
   });
+
 });
 
 function serverUpdate() {
+
   for (const bId in bullets) {
     const b = bullets[bId];
     b.range -= b.speed;
@@ -139,7 +154,10 @@ function serverUpdate() {
     }
   }
 
-  io.emit("serverUpdate", players, bullets);
+  for(let socket in sockets){
+    sockets[socket].emit("serverUpdate", getVisiblePlayers(players[sockets[socket].id]), getVisibleBullets(players[sockets[socket].id]), calculateVisibleObstacles(players[sockets[socket].id]));
+  }
+
 }
 
 setInterval(serverUpdate, updateTime);
@@ -159,5 +177,76 @@ function genId() {
   return Math.floor((1 + Math.random()) * 0x100000000)
     .toString(16)
     .substring(1)
-    .toString();
+    .toString();player
+}
+
+
+function getVisiblePlayers(ownPlayer){
+  let visiblePlayers = {};
+
+  if(ownPlayer)
+  {
+  
+    let ownX = ownPlayer.x;
+    let ownY = ownPlayer.y;
+    let screenWidth = ownPlayer.screenWidth;
+    let screenHeight = ownPlayer.screenHeight;
+    
+    for(let player in players){
+      let otherPlayer = players[player];
+      if( otherPlayer.x >= ownX-screenWidth/2 && otherPlayer.x <= ownX+screenWidth/2){  //x-check
+          if(otherPlayer.y >= ownY-screenHeight/2 && otherPlayer.y <= ownY+screenHeight/2)  //y-check
+            visiblePlayers[otherPlayer.id] = otherPlayer;
+      }     //add radius
+        
+    }
+ } 
+ return visiblePlayers;
+}
+
+function getVisibleBullets(ownPlayer){
+  let visibleBullets = {};
+
+  if(ownPlayer)
+  {
+  
+    let ownX = ownPlayer.x;
+    let ownY = ownPlayer.y;
+    let screenWidth = ownPlayer.screenWidth;
+    let screenHeight = ownPlayer.screenHeight;
+    
+    for(let bullet in bullets){
+      let bulletToCheck = bullets[bullet];
+      if(bulletToCheck.x >= ownX-screenWidth/2 && bulletToCheck.x <= ownX+screenWidth/2){  //x-check
+          if(bulletToCheck.y >= ownY-screenHeight/2 && bulletToCheck.y <= ownY+screenHeight/2)  //y-check
+            visibleBullets[bulletToCheck.id]=bulletToCheck;
+      }     //add radius
+        
+    }
+ } 
+ 
+ return visibleBullets;
+}
+
+function calculateVisibleObstacles(ownPlayer){
+  let visibleObstacleIds = {};
+
+  if(ownPlayer)
+  {
+  
+    let ownX = ownPlayer.x;
+    let ownY = ownPlayer.y;
+    let screenWidth = ownPlayer.screenWidth;
+    let screenHeight = ownPlayer.screenHeight;
+  
+    for(let obstacle in obstacles){
+        let obstacleToCheck = obstacles[obstacle];
+        if(obstacleToCheck.x+obstacleToCheck.sizeX/2 >= ownX-screenWidth/2 && obstacleToCheck.x-obstacleToCheck.sizeX/2 <= ownX+screenWidth/2){  //x-check
+            if(obstacleToCheck.y+obstacleToCheck.sizeY/2 >= ownY-screenHeight/2 && obstacleToCheck.y-obstacleToCheck.sizeY/2 <= ownY+screenHeight/2)  //y-check
+              visibleObstacleIds[obstacleToCheck.id] = obstacleToCheck.id; 
+        }
+    }
+
+  return visibleObstacleIds;
+  }
 }
