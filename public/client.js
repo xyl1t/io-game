@@ -109,6 +109,12 @@ function setup() {
       player.y = oldY;
     }
   });
+
+  socket.on("leaderboardUpdate", (sortedTop10) => {
+    for(let i=0;i<sortedTop10.length;i++) {
+      
+    }
+  });
 }
 
 function startGame(e) {

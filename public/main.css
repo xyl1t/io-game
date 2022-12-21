@@ -22,20 +22,8 @@
 #server_info{
   position: absolute;
   float: right;
-  top: 0;
-  right: 0;
-  width: 20%;
-  height: 50%;
-  border: solid black 1px;
-  z-index: 1;
-}
-
-
-#client_info{
-  position: absolute;
-  float: right;
-  bottom: 0;
-  right: 0;
+  top: 5px;
+  right: 5px;
   width: 20%;
   height: 50%;
   border: solid black 1px;

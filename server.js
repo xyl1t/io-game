@@ -35,6 +35,7 @@ const map = {
 
 const millisBetweenShots = 100;
 const timesOfLastShots = {};
+const playerScores = {};
 
 function generateObstacles(count) {
   for (let i = 0; i < count; i++) {
@@ -83,6 +84,7 @@ io.on("connection", (socket) => {
 
   socket.on("disconnect", () => {
     delete timesOfLastShots[socket.id];
+    delete playerScores[socket.id];
     delete players[socket.id];
     delete sockets[socket.id];
     console.log("a player disconnected", players);
@@ -91,6 +93,7 @@ io.on("connection", (socket) => {
   socket.on("join", (player) => {
     players[player.id] = player;
     timesOfLastShots[player.id] = 0;
+    playerScores[player.id] = {name:player.name, score:0};
     socket.broadcast.emit("playerJoin", player); // not yet handled in client
   });
 
@@ -100,7 +103,6 @@ io.on("connection", (socket) => {
     if (old) {
       players[player.id].specialColor = old.specialColor;
     }
-    console.log("playerUpdate", players[player.id]);
   });
 
   socket.on("shoot", (player) => {
@@ -161,6 +163,27 @@ function serverUpdate() {
 }
 
 setInterval(serverUpdate, updateTime);
+setInterval(updateLeaderboard, 1000);
+
+function updateLeaderboard() {
+  let sortedTop10 = getTopScores(10);
+
+  /*for(let i=0; i < sortedTop10.length; i++) {
+    sortedTop10[i] = {name:players[sortedTop10[i].id].name, score:sortedTop10[i].score};
+  }*/
+  
+  for(let socket in sockets){
+    sockets[socket].emit("leaderboardUpdate", sortedTop10);
+  }
+}
+
+function getTopScores(n){
+  let arr = playerScores;
+  if(n > arr.length) {
+    n = arr.length;
+  }
+  return arr.sort(function(a,b){ return b.score-a.score }).slice(0,n); //Exception arr.sort(...) is not a function
+}
 
 const PORT = argv.port ?? 8080;
 server.listen(PORT, () => {
