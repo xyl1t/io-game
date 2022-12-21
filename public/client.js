@@ -192,8 +192,6 @@ function loop() {
     socket.emit("playerUpdate", player);
   }
 
-  console.log("Client time: " + (new Date().getTime()-tStart.getTime()))
-
   window.requestAnimationFrame(loop);
 }
 
