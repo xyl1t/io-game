@@ -28,6 +28,7 @@ let player = {};
 
 let curTime = Date.now()
 let lastTime = Date.now()
+let gameIsRunning = false
 
 $(() => {
   setup();
@@ -127,6 +128,7 @@ function setup() {
       "jumbotron d-flex align-items-center vertical-center"
     );
     $("#deathText").css("display", "block");
+    gameIsRunning = false
   });
   
 }
@@ -141,6 +143,7 @@ function startGame(e) {
 
   player.name = $("#username").val();
   socket.emit("join", player);
+  gameIsRunning = true
 }
 
 function loop() {
@@ -194,21 +197,23 @@ function loop() {
   curTime = Date.now()
   const deltaTime = (curTime - lastTime) / 10
 
-  if (keyboard["w"]) {
-    player.y -= player.speed * deltaTime;
-    socket.emit("playerUpdate", player);
-  }
-  if (keyboard["s"]) {
-    player.y += player.speed * deltaTime;
-    socket.emit("playerUpdate", player);
-  }
-  if (keyboard["a"]) {
-    player.x -= player.speed * deltaTime;
-    socket.emit("playerUpdate", player);
-  }
-  if (keyboard["d"]) {
-    player.x += player.speed * deltaTime;
-    socket.emit("playerUpdate", player);
+  if (gameIsRunning){
+    if (keyboard["w"]) {
+      player.y -= player.speed * deltaTime;
+      socket.emit("playerUpdate", player);
+    }
+    if (keyboard["s"]) {
+      player.y += player.speed * deltaTime;
+      socket.emit("playerUpdate", player);
+    }
+    if (keyboard["a"]) {
+      player.x -= player.speed * deltaTime;
+      socket.emit("playerUpdate", player);
+    }
+    if (keyboard["d"]) {
+      player.x += player.speed * deltaTime;
+      socket.emit("playerUpdate", player);
+    }
   }
 
   player.screenWidth = window.innerWidth;         //adjust render distance to window
