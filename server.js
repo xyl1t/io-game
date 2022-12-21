@@ -1,7 +1,7 @@
 /*************************************************************************** */
 /*                          IO-Game over WebSockets                          */
 /*                                                                           */
-/*  Marat Isaw, Benjamin Terbul, Justus Arndt, Paul Trattnig, Thmoas Fischer */
+/*  Marat Isaw, Benjamin Terbul, Justus Arndt, Paul Trattnig, Thomas Fischer */
 /*  HTL Villach - Abteilung Informatik - 4AHIF                               */
 /*  (c) 2022/23                                                              */
 /*************************************************************************** */
