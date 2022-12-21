@@ -117,6 +117,7 @@ function setup() {
     $("#site_wrapper").addClass(
       "jumbotron d-flex align-items-center vertical-center"
     );
+    $("#deathText").css("display", "block");
   });
 }
 
@@ -126,6 +127,7 @@ function startGame(e) {
   $("#site_wrapper").removeClass(
     "jumbotron d-flex align-items-center vertical-center"
   );
+  $("#deathText").css("display", "none");
 
   player.name = $("#username").val();
   socket.emit("join", player);

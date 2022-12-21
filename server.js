@@ -56,29 +56,29 @@ function generateObstacles(count) {
 
 generateObstacles(32);
 
-function getNewPlayer(socket, isDead){
-  return {
-    id: socket.id,
-    x: 0,
-    y: 0,
-    screenWidth: socket.handshake.query.screenWidth,
-    screenHeight: socket.handshake.query.screenHeight,
-    color: getRandomColor(),
-    specialColor: undefined,
-    angle: 0,
-    radius: 16,
-    name: "",
-    hp: 100,
-    speed: 3,
-    dead: isDead || false
-  };
+class Player {
+  constructor(socket, isDead) {
+    this.id = socket.id;
+    this.x = 0;
+    this.y = 0;
+    this.screenWidth = socket.handshake.query.screenWidth;
+    this.screenHeight = socket.handshake.query.screenHeight;
+    this.color = getRandomColor();
+    this.specialColor = undefined;
+    this.angle = 0;
+    this.radius = 16;
+    this.name = "";
+    this.hp = 100;
+    this.speed = 3;
+    this.dead = isDead || false
+  }
 }
 
 io.on("connection", (socket) => {
   const token = socket.handshake.auth.token;
   if (token != "actualUser") socket.disconnect(true);
 
-  let newPlayer = getNewPlayer(socket)
+  let newPlayer = new Player(socket);
   sockets[newPlayer.id] = socket;
   console.log("a new player connected", players);
   socket.emit("welcome", newPlayer, map, obstacles);
@@ -152,8 +152,10 @@ function serverUpdate() {
 
           delete bullets[bId];
         }
-        if(p.hp <= 0)
+
+        if(p.hp <= 0) {
           playerDied(pId)
+        }
       }
     } else {
       delete bullets[bId];
@@ -167,7 +169,7 @@ function serverUpdate() {
 }
 
 function playerDied(playerId){
-  players[playerId] = getNewPlayer(sockets[playerId], true);
+  players[playerId] = new Player(sockets[playerId], true);
   sockets[playerId].emit("died")
 }
 
