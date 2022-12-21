@@ -27,6 +27,12 @@ const sockets = {};
 const players = {};
 const bullets = {};
 const obstacles = {};
+const obstaclesMap = {
+  name: "obstacles",
+  width: 5000,
+  height: 5000
+};
+
 const map = {
   name: "map",
   width: 5000,
@@ -79,7 +85,7 @@ io.on("connection", (socket) => {
   
   console.log("a new player connected", players);
 
-  socket.emit("welcome", newPlayer, map, obstacles);
+  socket.emit("welcome", newPlayer, map, obstacles, obstaclesMap);
 
   socket.on("disconnect", () => {
     delete timesOfLastShots[socket.id];
