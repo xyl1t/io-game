@@ -25,3 +25,25 @@
 body{
   overflow: hidden;
 }
+
+#start_game{
+  text-align: center;
+  width: 50%;
+  margin-top: 5px;
+}
+
+#game_name{
+  text-align: center;
+  margin-bottom: 25px;
+  font-size: 50px;
+}
+
+#username{
+  width: 50%;
+  margin: auto;
+}
+
+#input_container{
+  text-align: center;
+  margin-bottom: 100%;
+}
