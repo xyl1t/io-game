@@ -280,8 +280,8 @@ function calculateVisibleObstacles(ownPlayer){
   
     for(let obstacle in obstacles){
         let obstacleToCheck = obstacles[obstacle];
-        if(obstacleToCheck.x+obstacleToCheck.sizeX/2 >= ownX-screenWidth/2 && obstacleToCheck.x-obstacleToCheck.sizeX/2 <= ownX+screenWidth/2){  //x-check
-            if(obstacleToCheck.y+obstacleToCheck.sizeY/2 >= ownY-screenHeight/2 && obstacleToCheck.y-obstacleToCheck.sizeY/2 <= ownY+screenHeight/2)  //y-check
+        if(obstacleToCheck.x+obstacleToCheck.sizeX/2 >= ownX-screenWidth && obstacleToCheck.x-obstacleToCheck.sizeX/2 <= ownX+screenWidth){  //x-check
+            if(obstacleToCheck.y+obstacleToCheck.sizeY/2 >= ownY-screenHeight && obstacleToCheck.y-obstacleToCheck.sizeY/2 <= ownY+screenHeight)  //y-check
               visibleObstacleIds[obstacleToCheck.id] = obstacleToCheck.id; 
         }
     }

@@ -151,16 +151,12 @@ function loop() {
   ctx.save();
   ctx.translate(canvas.width / 2, canvas.height / 2);
 
-  console.log('if left: ', player.x * 2 + window.innerWidth)
-  console.log('if right: ', map.width)
   let translateMapX = -player.x
   let translateMapY = -player.y
   if(player.x * 2 + window.innerWidth >= map.width)
     translateMapX = -(map.width / 2 - window.innerWidth / 2)
   if(player.x * 2 - window.innerWidth < -map.width)
     translateMapX = map.width / 2 - window.innerWidth / 2
-
-
   if(player.y * 2 + window.innerHeight >= map.height)
     translateMapY = -(map.height / 2 - window.innerHeight / 2)
   if(player.y * 2 - window.innerHeight < -map.height)
@@ -234,7 +230,6 @@ function loop() {
 }
 
 function drawPlayer(player) {
-  console.log('in draw player')
   ctx.save();
   ctx.translate(player.x, player.y);
   ctx.rotate(player.angle);
