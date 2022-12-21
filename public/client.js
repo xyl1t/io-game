@@ -109,6 +109,16 @@ function setup() {
       player.y = oldY;
     }
   });
+
+  socket.on("died", () => {
+    $("#game_elements").css("display", "none");
+    $("#settings_elements").css("display", "inline");
+    $("#died_screen").css("display", "inline");
+    $("#site_wrapper").addClass(
+      "jumbotron d-flex align-items-center vertical-center"
+    );
+    $("#deathText").css("display", "block");
+  });
 }
 
 function startGame(e) {
@@ -117,6 +127,7 @@ function startGame(e) {
   $("#site_wrapper").removeClass(
     "jumbotron d-flex align-items-center vertical-center"
   );
+  $("#deathText").css("display", "none");
 
   player.name = $("#username").val();
   socket.emit("join", player);
