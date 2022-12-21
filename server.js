@@ -53,10 +53,7 @@ function generateObstacles(count) {
 
 generateObstacles(32);
 
-io.on("connection", (socket) => {
-  const token = socket.handshake.auth.token;
-  if (token != "actualUser") socket.disconnect(true);
-
+function newPlayerConnected(socket){
   let newPlayer = {
     id: socket.id,
     x: 0,
@@ -72,10 +69,14 @@ io.on("connection", (socket) => {
   };
 
   sockets[newPlayer.id] = socket;
-  
   console.log("a new player connected", players);
-
   socket.emit("welcome", newPlayer, map, obstacles);
+}
+
+io.on("connection", (socket) => {
+  const token = socket.handshake.auth.token;
+  if (token != "actualUser") socket.disconnect(true);
+  newPlayerConnected(socket);
 
   socket.on("disconnect", () => {
     delete players[socket.id];
@@ -86,6 +87,14 @@ io.on("connection", (socket) => {
   socket.on("join", (player) => {
     players[player.id] = player;
     socket.broadcast.emit("playerJoin", player); // not yet handled in client
+  });
+
+  socket.on("died", (player) => {
+    console.log('in died')
+    delete players[player.id];
+    delete sockets[player.id];
+    console.log("a player has died", players);
+    newPlayerConnected(socket)
   });
 
   socket.on("playerUpdate", (player) => {

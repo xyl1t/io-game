@@ -97,6 +97,7 @@ function setup() {
   });
 
   socket.on("serverUpdate", (playersFromServer, bulletsFromServer, obstacleIds) => {
+    console.log('players from server: ', playersFromServer)
     players = playersFromServer;
     bullets = bulletsFromServer;
     visibleObstacleIds = obstacleIds;
@@ -122,74 +123,88 @@ function startGame(e) {
   socket.emit("join", player);
 }
 
+function stopGame(e){
+  $("#game_elements").css("display", "none");
+  $("#settings_elements").css("display", "inline");
+  $("#died_screen").css("display", "inline");
+  $("#site_wrapper").addClass(
+    "jumbotron d-flex align-items-center vertical-center"
+  );
+  socket.emit("died", player);
+}
+
 function loop() {
+  if (player.hp <= 0)
+    stopGame()
+  else{
 
-  ctx.fillStyle = "#fff";
-  ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
 
-  ctx.save();
-  ctx.translate(canvas.width / 2, canvas.height / 2);
-  ctx.translate(-player.x, -player.y);
+    ctx.save();
+    ctx.translate(canvas.width / 2, canvas.height / 2);
+    ctx.translate(-player.x, -player.y);
 
-  // draw map
-  if (map.htmlImage) {
-    ctx.drawImage(
-      map.htmlImage,
-      -map.width / 2,
-      -map.height / 2,
-      map.width,
-      map.height
-    );
-  }
+    // draw map
+    if (map.htmlImage) {
+      ctx.drawImage(
+        map.htmlImage,
+        -map.width / 2,
+        -map.height / 2,
+        map.width,
+        map.height
+      );
+    }
 
-  // players
-  drawPlayer(player);
-  for (const id in players) {
-    if (player.id != id) {
-      drawPlayer(players[id]);
+    // players
+    drawPlayer(player);
+    for (const id in players) {
+      if (player.id != id) {
+        drawPlayer(players[id]);
+      }
+    }
+
+    // bullets
+    for (const id in bullets) {
+      drawBullet(bullets[id]);
+    }
+
+    // obstacles
+    for (const id in visibleObstacleIds) {
+      if(obstacles[id]){
+        const obs = obstacles[id];
+        if (obs.htmlImage)
+        drawObstacle(obs);
+      }
+    }
+
+    ctx.restore();
+
+    // game logic /////////////////////////////////////////////
+
+
+    lastTime = curTime;
+    curTime = Date.now()
+    const deltaTime = (curTime - lastTime) / 10
+
+    if (keyboard["w"]) {
+      player.y -= player.speed * deltaTime;
+      socket.emit("playerUpdate", player);
+    }
+    if (keyboard["s"]) {
+      player.y += player.speed * deltaTime;
+      socket.emit("playerUpdate", player);
+    }
+    if (keyboard["a"]) {
+      player.x -= player.speed * deltaTime;
+      socket.emit("playerUpdate", player);
+    }
+    if (keyboard["d"]) {
+      player.x += player.speed * deltaTime;
+      socket.emit("playerUpdate", player);
     }
   }
-
-  // bullets
-  for (const id in bullets) {
-    drawBullet(bullets[id]);
-  }
-
-  // obstacles
-  for (const id in visibleObstacleIds) {
-    if(obstacles[id]){
-      const obs = obstacles[id];
-      if (obs.htmlImage)
-      drawObstacle(obs);
-    }
-  }
-
-  ctx.restore();
-
-  // game logic /////////////////////////////////////////////
-
-
-  lastTime = curTime;
-  curTime = Date.now()
-  const deltaTime = (curTime - lastTime) / 10
-
-  if (keyboard["w"]) {
-    player.y -= player.speed * deltaTime;
-    socket.emit("playerUpdate", player);
-  }
-  if (keyboard["s"]) {
-    player.y += player.speed * deltaTime;
-    socket.emit("playerUpdate", player);
-  }
-  if (keyboard["a"]) {
-    player.x -= player.speed * deltaTime;
-    socket.emit("playerUpdate", player);
-  }
-  if (keyboard["d"]) {
-    player.x += player.speed * deltaTime;
-    socket.emit("playerUpdate", player);
-  }
-
+  
   window.requestAnimationFrame(loop);
 }
 
