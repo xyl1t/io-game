@@ -117,7 +117,8 @@ function setup() {
       
     }
     $('#leaderboard').html(strToDisplay)
-    
+  });
+
   socket.on("died", () => {
     $("#game_elements").css("display", "none");
     $("#settings_elements").css("display", "inline");
@@ -127,8 +128,7 @@ function setup() {
     );
     $("#deathText").css("display", "block");
   });
-
-  });
+  
 }
 
 function startGame(e) {
