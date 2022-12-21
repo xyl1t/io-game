@@ -113,10 +113,10 @@ function setup() {
   socket.on("leaderboardUpdate", (sortedTop10) => {
     let strToDisplay = ''
     for(let i=0;i<sortedTop10.length;i++) {
-      strToDisplay += `<p>${i+1}. Player: ${sortedTop10[i].name}</p>`
+      strToDisplay += `<tr class="row"><td class="col-2">${i+1}</td><td class="col">${sortedTop10[i].name}</td></tr>`
       
     }
-    $('#server_info').html(strToDisplay)
+    $('#leaderboard').html(strToDisplay)
   });
 }
 
