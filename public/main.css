@@ -1,6 +1,5 @@
 * {
-  font-family: "Arial";
-  font-family: "Arial";
+  font-family: 'Roboto', sans-serif, "Arial";
   cursor: url(http://www.rw-designer.com/cursor-extern.php?id=150930), auto;
 }
 
@@ -25,3 +24,29 @@
 #died_screen {
   display:none;
 }
+body{
+  overflow: hidden;
+}
+
+#start_game{
+  text-align: center;
+  width: 50%;
+  margin-top: 5px;
+}
+
+#game_name{
+  text-align: center;
+  margin-bottom: 25px;
+  font-size: 50px;
+}
+
+#username{
+  width: 50%;
+  margin: auto;
+}
+
+#input_container{
+  text-align: center;
+  margin-bottom: 100%;
+}
+

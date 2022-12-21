@@ -33,6 +33,9 @@ const map = {
   height: 5000,
 };
 
+const millisBetweenShots = 100;
+const timesOfLastShots = {};
+
 function generateObstacles(count) {
   for (let i = 0; i < count; i++) {
     const id = genId();
@@ -61,6 +64,7 @@ function newPlayerConnected(socket) {
     screenWidth: socket.handshake.query.screenWidth,
     screenHeight: socket.handshake.query.screenHeight,
     color: getRandomColor(),
+    specialColor: undefined,
     angle: 0,
     radius: 16,
     name: "",
@@ -79,6 +83,7 @@ io.on("connection", (socket) => {
   newPlayerConnected(socket);
 
   socket.on("disconnect", () => {
+    delete timesOfLastShots[socket.id];
     delete players[socket.id];
     delete sockets[socket.id];
     console.log("a player disconnected", players);
@@ -86,6 +91,7 @@ io.on("connection", (socket) => {
 
   socket.on("join", (player) => {
     players[player.id] = player;
+    timesOfLastShots[player.id] = 0;
     socket.broadcast.emit("playerJoin", player); // not yet handled in client
   });
 
@@ -98,24 +104,32 @@ io.on("connection", (socket) => {
   });
 
   socket.on("playerUpdate", (player) => {
+    const old = players[player.id];
     players[player.id] = player;
-    // console.log("playerUpdate", player);
+
+    if (old) {
+      players[player.id].specialColor = old.specialColor;
+    }
+    console.log("playerUpdate", players[player.id]);
   });
 
   socket.on("shoot", (player) => {
-    const bulletId = genId();
-    bullets[bulletId] = {
-      id: bulletId,
-      playerId: player.id,
-      angle: player.angle,
-      speed: 16,
-      x: player.x,
-      y: player.y,
-      radius: 6,
-      color: player.color,
-      range: 1000, // pixels
-      damage: 10, // hp
-    };
+    if(Date.now() - timesOfLastShots[player.id] > millisBetweenShots) {
+      const bulletId = genId();
+      bullets[bulletId] = {
+        id: bulletId,
+        playerId: player.id,
+        angle: player.angle,
+        speed: 16,
+        x: player.x,
+        y: player.y,
+        radius: 6,
+        color: player.color,
+        range: 1000, // pixels
+        damage: 10, // hp
+      };
+      timesOfLastShots[player.id] = Date.now();
+    }
   });
 });
 
@@ -134,13 +148,12 @@ function serverUpdate() {
         const distance = Math.sqrt(distX * distX + distY * distY);
         if (pId != b.playerId && distance <= p.radius + b.radius) {
           p.hp -= b.damage;
-          const origColor = p.color;
-          p.color = "#FF0000";
+          p.specialColor = "#FF0000";
 
           const myTimeout = setTimeout(() => {
             p.color = origColor;
             clearTimeout(myTimeout);
-          }, 100);
+          );
 
           delete bullets[bId];
         }

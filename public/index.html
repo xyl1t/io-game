@@ -10,18 +10,25 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400&display=swap" rel="stylesheet">
     <title>io-game</title>
     
 </head>
 <body>
     <div id="site_wrapper" class="jumbotron d-flex align-items-center vertical-center">
         <div id="settings_elements" class="container">
-            <blockquote id="died_screen" class="blockquote text-center">
-                <p>You died</p>
-                <p>Score: 100</p>
-            </blockquote>
+            
             <input id="username" type="text" class="form-control" placeholder="Username" aria-label="Username" aria-describedby="basic-addon1" value="anon" autofocus>
             <button id="start_game" type="button" class="btn btn-primary">Start Game</button>
+            <div id="input_container">
+                <h1 id="game_name">Sasma.io</h1>
+                <blockquote id="died_screen" class="blockquote text-center">
+                    <p>You died</p>
+                    <p>Score: 100</p>
+                </blockquote>
+                <input id="username" type="text" class="form-control" placeholder="Username" aria-label="Username" aria-describedby="basic-addon1" value="anon" autofocus>
+                <button id="start_game" type="button" class="btn btn-primary">Start Game</button>
+            </div>
         </div>
         <div id="game_elements">
             <canvas id="canvas" oncontextmenu="return false;" style="width:5000;"></canvas>
