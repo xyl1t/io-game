@@ -111,7 +111,12 @@ function setup() {
   });
 
   socket.on("died", () => {
-    
+    $("#game_elements").css("display", "none");
+    $("#settings_elements").css("display", "inline");
+    $("#died_screen").css("display", "inline");
+    $("#site_wrapper").addClass(
+      "jumbotron d-flex align-items-center vertical-center"
+    );
   });
 }
 
