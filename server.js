@@ -46,14 +46,14 @@ function generateObstacles(count) {
       x: Math.random() * (maxX - minX) + minX,
       y: Math.random() * (maxY - minY) + minY,
       sizeX: 180,
-      sizeY: 180
+      sizeY: 180,
     };
   }
 }
 
 generateObstacles(32);
 
-function newPlayerConnected(socket){
+function newPlayerConnected(socket) {
   let newPlayer = {
     id: socket.id,
     x: 0,
@@ -65,7 +65,7 @@ function newPlayerConnected(socket){
     radius: 16,
     name: "",
     hp: 100,
-    speed: 3
+    speed: 3,
   };
 
   sockets[newPlayer.id] = socket;
@@ -90,16 +90,16 @@ io.on("connection", (socket) => {
   });
 
   socket.on("died", (player) => {
-    console.log('in died')
+    console.log("in died");
     delete players[player.id];
     delete sockets[player.id];
     console.log("a player has died", players);
-    newPlayerConnected(socket)
+    newPlayerConnected(socket);
   });
 
   socket.on("playerUpdate", (player) => {
     players[player.id] = player;
-   // console.log("playerUpdate", player);
+    // console.log("playerUpdate", player);
   });
 
   socket.on("shoot", (player) => {
@@ -117,11 +117,9 @@ io.on("connection", (socket) => {
       damage: 10, // hp
     };
   });
-
 });
 
 function serverUpdate() {
-  
   for (const bId in bullets) {
     const b = bullets[bId];
     b.range -= b.speed;
@@ -139,7 +137,7 @@ function serverUpdate() {
           const origColor = p.color;
           p.color = "#FF0000";
 
-          const myTimeout = setTimeout(()=> {
+          const myTimeout = setTimeout(() => {
             p.color = origColor;
             clearTimeout(myTimeout);
           }, 100);
@@ -152,10 +150,14 @@ function serverUpdate() {
     }
   }
 
-  for(let socket in sockets){
-    sockets[socket].emit("serverUpdate", getVisiblePlayers(players[sockets[socket].id]), getVisibleBullets(players[sockets[socket].id]), calculateVisibleObstacles(players[sockets[socket].id]));
+  for (let socket in sockets) {
+    sockets[socket].emit(
+      "serverUpdate",
+      getVisiblePlayers(players[sockets[socket].id]),
+      getVisibleBullets(players[sockets[socket].id]),
+      calculateVisibleObstacles(players[sockets[socket].id])
+    );
   }
-
 }
 
 setInterval(serverUpdate, updateTime);
@@ -175,76 +177,95 @@ function genId() {
   return Math.floor((1 + Math.random()) * 0x100000000)
     .toString(16)
     .substring(1)
-    .toString();player
+    .toString();
+  player;
 }
 
-
-function getVisiblePlayers(ownPlayer){
+function getVisiblePlayers(ownPlayer) {
   let visiblePlayers = {};
 
-  if(ownPlayer)
-  {
-  
+  if (ownPlayer) {
     let ownX = ownPlayer.x;
     let ownY = ownPlayer.y;
     let screenWidth = ownPlayer.screenWidth;
     let screenHeight = ownPlayer.screenHeight;
-    
-    for(let player in players){
+
+    for (let player in players) {
       let otherPlayer = players[player];
-      if( otherPlayer.x >= ownX-screenWidth/2 && otherPlayer.x <= ownX+screenWidth/2){  //x-check
-          if(otherPlayer.y >= ownY-screenHeight/2 && otherPlayer.y <= ownY+screenHeight/2)  //y-check
-            visiblePlayers[otherPlayer.id] = otherPlayer;
-      }     //add radius
-        
+      if (
+        otherPlayer.x >= ownX - screenWidth / 2 &&
+        otherPlayer.x <= ownX + screenWidth / 2
+      ) {
+        //x-check
+        if (
+          otherPlayer.y >= ownY - screenHeight / 2 &&
+          otherPlayer.y <= ownY + screenHeight / 2
+        )
+          //y-check
+          visiblePlayers[otherPlayer.id] = otherPlayer;
+      } //add radius
     }
- } 
- return visiblePlayers;
+  }
+  return visiblePlayers;
 }
 
-function getVisibleBullets(ownPlayer){
+function getVisibleBullets(ownPlayer) {
   let visibleBullets = {};
 
-  if(ownPlayer)
-  {
-  
+  if (ownPlayer) {
     let ownX = ownPlayer.x;
     let ownY = ownPlayer.y;
     let screenWidth = ownPlayer.screenWidth;
     let screenHeight = ownPlayer.screenHeight;
-    
-    for(let bullet in bullets){
+
+    for (let bullet in bullets) {
       let bulletToCheck = bullets[bullet];
-      if(bulletToCheck.x >= ownX-screenWidth/2 && bulletToCheck.x <= ownX+screenWidth/2){  //x-check
-          if(bulletToCheck.y >= ownY-screenHeight/2 && bulletToCheck.y <= ownY+screenHeight/2)  //y-check
-            visibleBullets[bulletToCheck.id]=bulletToCheck;
-      }     //add radius
-        
+      if (
+        bulletToCheck.x >= ownX - screenWidth / 2 &&
+        bulletToCheck.x <= ownX + screenWidth / 2
+      ) {
+        //x-check
+        if (
+          bulletToCheck.y >= ownY - screenHeight / 2 &&
+          bulletToCheck.y <= ownY + screenHeight / 2
+        )
+          //y-check
+          visibleBullets[bulletToCheck.id] = bulletToCheck;
+      } //add radius
     }
- } 
- 
- return visibleBullets;
+  }
+
+  return visibleBullets;
 }
 
-function calculateVisibleObstacles(ownPlayer){
+function calculateVisibleObstacles(ownPlayer) {
   let visibleObstacleIds = {};
 
-  if(ownPlayer)
-  {
-  
+  if (ownPlayer) {
     let ownX = ownPlayer.x;
     let ownY = ownPlayer.y;
     let screenWidth = ownPlayer.screenWidth;
     let screenHeight = ownPlayer.screenHeight;
-  
-    for(let obstacle in obstacles){
-        let obstacleToCheck = obstacles[obstacle];
-        if(obstacleToCheck.x+obstacleToCheck.sizeX/2 >= ownX-screenWidth/2 && obstacleToCheck.x-obstacleToCheck.sizeX/2 <= ownX+screenWidth/2){  //x-check
-            if(obstacleToCheck.y+obstacleToCheck.sizeY/2 >= ownY-screenHeight/2 && obstacleToCheck.y-obstacleToCheck.sizeY/2 <= ownY+screenHeight/2)  //y-check
-              visibleObstacleIds[obstacleToCheck.id] = obstacleToCheck.id; 
-        }
+
+    for (let obstacle in obstacles) {
+      let obstacleToCheck = obstacles[obstacle];
+      if (
+        obstacleToCheck.x + obstacleToCheck.sizeX / 2 >=
+          ownX - screenWidth / 2 &&
+        obstacleToCheck.x - obstacleToCheck.sizeX / 2 <= ownX + screenWidth / 2
+      ) {
+        //x-check
+        if (
+          obstacleToCheck.y + obstacleToCheck.sizeY / 2 >=
+            ownY - screenHeight / 2 &&
+          obstacleToCheck.y - obstacleToCheck.sizeY / 2 <=
+            ownY + screenHeight / 2
+        )
+          //y-check
+          visibleObstacleIds[obstacleToCheck.id] = obstacleToCheck.id;
+      }
     }
 
-  return visibleObstacleIds;
+    return visibleObstacleIds;
   }
 }

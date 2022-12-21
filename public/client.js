@@ -26,8 +26,8 @@ const keyboard = {};
 
 let player = {};
 
-let curTime = Date.now()
-let lastTime = Date.now()
+let curTime = Date.now();
+let lastTime = Date.now();
 
 $(() => {
   setup();
@@ -80,8 +80,8 @@ function setup() {
     },
     query: {
       screenWidth: window.innerWidth,
-      screenHeight: window.innerHeight
-    }
+      screenHeight: window.innerHeight,
+    },
   });
 
   socket.on("welcome", (me, mapFromServer, obstaclesFromServer) => {
@@ -96,20 +96,23 @@ function setup() {
     }
   });
 
-  socket.on("serverUpdate", (playersFromServer, bulletsFromServer, obstacleIds) => {
-    console.log('players from server: ', playersFromServer)
-    players = playersFromServer;
-    bullets = bulletsFromServer;
-    visibleObstacleIds = obstacleIds;
+  socket.on(
+    "serverUpdate",
+    (playersFromServer, bulletsFromServer, obstacleIds) => {
+      console.log("players from server: ", playersFromServer);
+      players = playersFromServer;
+      bullets = bulletsFromServer;
+      visibleObstacleIds = obstacleIds;
 
-    if (players[player.id]) {
-      const oldX = player.x;
-      const oldY = player.y;
-      player = players[player.id];
-      player.x = oldX;
-      player.y = oldY;
+      if (players[player.id]) {
+        const oldX = player.x;
+        const oldY = player.y;
+        player = players[player.id];
+        player.x = oldX;
+        player.y = oldY;
+      }
     }
-  });
+  );
 }
 
 function startGame(e) {
@@ -123,7 +126,7 @@ function startGame(e) {
   socket.emit("join", player);
 }
 
-function stopGame(e){
+function stopGame(e) {
   $("#game_elements").css("display", "none");
   $("#settings_elements").css("display", "inline");
   $("#died_screen").css("display", "inline");
@@ -134,10 +137,8 @@ function stopGame(e){
 }
 
 function loop() {
-  if (player.hp <= 0)
-    stopGame()
-  else{
-
+  if (player.hp <= 0) stopGame();
+  else {
     ctx.fillStyle = "#fff";
     ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
 
@@ -171,10 +172,9 @@ function loop() {
 
     // obstacles
     for (const id in visibleObstacleIds) {
-      if(obstacles[id]){
+      if (obstacles[id]) {
         const obs = obstacles[id];
-        if (obs.htmlImage)
-        drawObstacle(obs);
+        if (obs.htmlImage) drawObstacle(obs);
       }
     }
 
@@ -182,10 +182,9 @@ function loop() {
 
     // game logic /////////////////////////////////////////////
 
-
     lastTime = curTime;
-    curTime = Date.now()
-    const deltaTime = (curTime - lastTime) / 10
+    curTime = Date.now();
+    const deltaTime = (curTime - lastTime) / 10;
 
     if (keyboard["w"]) {
       player.y -= player.speed * deltaTime;
@@ -204,7 +203,7 @@ function loop() {
       socket.emit("playerUpdate", player);
     }
   }
-  
+
   window.requestAnimationFrame(loop);
 }
 
@@ -273,13 +272,13 @@ function drawObstacle(obs) {
   ctx.save();
   ctx.translate(obs.x, obs.y);
 
-    ctx.drawImage(
-      obs.htmlImage,
-      -obs.htmlImage.width / 2,
-      -obs.htmlImage.height / 2,
-      obs.htmlImage.width,
-      obs.htmlImage.height
-    );
+  ctx.drawImage(
+    obs.htmlImage,
+    -obs.htmlImage.width / 2,
+    -obs.htmlImage.height / 2,
+    obs.htmlImage.width,
+    obs.htmlImage.height
+  );
 
   ctx.restore();
 }
