@@ -19,11 +19,24 @@
         <div id="settings_elements" class="container">
             <div id="input_container">
                 <h1 id="game_name">Sasma.io</h1>
+                <p id="deathText" style="display:none">You died</p>
                 <input id="username" type="text" class="form-control" placeholder="Username" aria-label="Username" aria-describedby="basic-addon1" value="anon" autofocus>
                 <button id="start_game" type="button" class="btn btn-primary">Start Game</button>
             </div>
         </div>
         <div id="game_elements">
+            <div class="container" id="server_info">
+                <table class="table">
+                    <thead>
+                      <tr class="row">
+                        <th class="col-2" scope="col">#</th>
+                        <th class="col" scope="col">Name</th>
+                      </tr>
+                    </thead>
+                    <tbody id="leaderboard">
+                    </tbody>
+                  </table>
+            </div>
             <canvas id="canvas" oncontextmenu="return false;" style="width:5000;"></canvas>
         </div>
     </div>

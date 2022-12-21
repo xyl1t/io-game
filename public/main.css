@@ -11,14 +11,39 @@
     align-items: center;
 }
 
-  /*#game_elements {
-    position: absolute !important;
-    top: 0;
-    left: 0;
-    opacity: 0;
-}*/
+  body{
+    position: relative;
+  }
+
 #game_elements {
-    display:none;
+  display:none;
+}
+
+#server_info{
+  position: absolute;
+  float: right;
+  top: 5px;
+  right: 5px;
+  width: 20%;
+  height: 50%;
+  border: solid black 1px;
+  z-index: 1;
+}
+
+canvas{
+  z-index: -1;
+}
+
+#scores{
+  height: 100%;
+}
+
+.dim {
+  /* For Internet Explorer */
+  box-shadow: 0 0 0 1000px rgba(0, 0, 0, .3);
+    
+  /* For other browsers */
+  box-shadow: 0 0 0 100vmax rgba(0, 0, 0, .3);
 }
 
 body{

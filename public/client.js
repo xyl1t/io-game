@@ -112,6 +112,26 @@ function setup() {
       player.y = oldY;
     }
   });
+
+  socket.on("leaderboardUpdate", (sortedTop10) => {
+    let strToDisplay = ''
+    for(let i=0;i<sortedTop10.length;i++) {
+      strToDisplay += `<tr class="row"><td class="col-2">${i+1}</td><td class="col">${sortedTop10[i].name}</td></tr>`
+      
+    }
+    $('#leaderboard').html(strToDisplay)
+  });
+
+  socket.on("died", () => {
+    $("#game_elements").css("display", "none");
+    $("#settings_elements").css("display", "inline");
+    $("#died_screen").css("display", "inline");
+    $("#site_wrapper").addClass(
+      "jumbotron d-flex align-items-center vertical-center"
+    );
+    $("#deathText").css("display", "block");
+  });
+  
 }
 
 function startGame(e) {
@@ -120,14 +140,13 @@ function startGame(e) {
   $("#site_wrapper").removeClass(
     "jumbotron d-flex align-items-center vertical-center"
   );
+  $("#deathText").css("display", "none");
 
   player.name = $("#username").val();
   socket.emit("join", player);
 }
 
 function loop() {
-
-  let tStart = new Date();
 
   ctx.fillStyle = "#fff";
   ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
