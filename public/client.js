@@ -93,6 +93,8 @@ function setup() {
     for (const id in obstacles) {
       obstacles[id].htmlImage = document.createElement("img");
       obstacles[id].htmlImage.src = `/img/${obstacles[id].type}.png`;
+      //console.log('htmlImage: ', map)
+      console.log('me: ', me)
     }
   });
 
@@ -194,19 +196,19 @@ function loop() {
   curTime = Date.now()
   const deltaTime = (curTime - lastTime) / 10
 
-  if (keyboard["w"]) {
+  if (keyboard["w"] && -player.y * 2 < map.height - player.radius * 2) {
     player.y -= player.speed * deltaTime;
     socket.emit("playerUpdate", player);
   }
-  if (keyboard["s"]) {
+  if (keyboard["s"] && player.y * 2 < map.height - player.radius * 2) {
     player.y += player.speed * deltaTime;
     socket.emit("playerUpdate", player);
   }
-  if (keyboard["a"]) {
+  if (keyboard["a"] && -player.x * 2 < map.width - player.radius * 2) {
     player.x -= player.speed * deltaTime;
     socket.emit("playerUpdate", player);
   }
-  if (keyboard["d"]) {
+  if (keyboard["d"] && player.x * 2 < map.width - player.radius * 2) {
     player.x += player.speed * deltaTime;
     socket.emit("playerUpdate", player);
   }
