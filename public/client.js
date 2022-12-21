@@ -126,6 +126,7 @@ function setup() {
       "jumbotron d-flex align-items-center vertical-center"
     );
     $("#deathText").css("display", "block");
+  });
 
   });
 }
