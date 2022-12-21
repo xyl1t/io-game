@@ -35,7 +35,6 @@ $(() => {
 });
 
 function setup() {
-
   $("#start_game").click(startGame);
 
   // Execute a function when the user presses a key on the keyboard
@@ -85,7 +84,6 @@ function setup() {
     }
   });
 
-
   socket.on("welcome", (me, mapFromServer, obstaclesFromServer) => {
     player = me;
     map = mapFromServer;
@@ -103,12 +101,6 @@ function setup() {
     bullets = bulletsFromServer;
     visibleObstacleIds = obstacleIds;
 
-    const oldX = player.x;
-    const oldY = player.y;
-    player = players[player.id];
-    player.x = oldX;
-    player.y = oldY;
-
     if (players[player.id]) {
       const oldX = player.x;
       const oldY = player.y;
@@ -116,7 +108,12 @@ function setup() {
       player.x = oldX;
       player.y = oldY;
     }
+  });
 
+  socket.on("leaderboardUpdate", (sortedTop10) => {
+    for(let i=0;i<sortedTop10.length;i++) {
+      
+    }
   });
 }
 
@@ -199,7 +196,7 @@ function loop() {
     socket.emit("playerUpdate", player);
   }
 
-  player.screenWidth = window.innerWidth;
+  player.screenWidth = window.innerWidth;         //adjust render distance to window
   player.screenHeight = window.innerHeight;
 
   window.requestAnimationFrame(loop);
