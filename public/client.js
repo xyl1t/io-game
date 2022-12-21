@@ -147,7 +147,6 @@ function startGame(e) {
 }
 
 function loop() {
-
   renderScaleX =  1/window.devicePixelRatio;
   renderScaleY = 1/window.devicePixelRatio;
 
@@ -218,8 +217,8 @@ function loop() {
     socket.emit("playerUpdate", player);
   }
 
-  player.screenWidth = window.innerWidth;         //adjust render distance to window
-  player.screenHeight = window.innerHeight;
+  player.screenWidth = window.innerWidth*window.devicePixelRatio;         //adjust render distance to window
+  player.screenHeight = window.innerHeight*window.devicePixelRatio;       //multiply with pixel-ratio to get actual height and width to render
 
   window.requestAnimationFrame(loop);
 }
