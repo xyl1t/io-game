@@ -84,16 +84,19 @@ function setup() {
     }
   });
 
-  socket.on("welcome", (me, mapFromServer, obstaclesFromServer) => {
+  socket.on("welcome", (me, mapFromServer, obstaclesFromServer, obstaclesMap) => {
     player = me;
     map = mapFromServer;
     map.htmlImage = document.createElement("img");
     map.htmlImage.src = `/img/${map.name}.png`;
-    obstacles = obstaclesFromServer;
+    /*obstacles = obstaclesFromServer;
     for (const id in obstacles) {
       obstacles[id].htmlImage = document.createElement("img");
       obstacles[id].htmlImage.src = `/img/${obstacles[id].type}.png`;
-    }
+    }*/
+    obstacles = obstaclesMap; 
+    obstacles.htmlImage = document.createElement("img");
+    obstacles.htmlImage.src = `/img/${obstacles.name}.png`;
   });
 
   socket.on("serverUpdate", (playersFromServer, bulletsFromServer, obstacleIds) => {
@@ -169,6 +172,15 @@ function loop() {
     if (player.id != id) {
       drawPlayer(players[id]);
     }
+  }
+  if(obstacles.htmlImage){
+    ctx.drawImage(
+      obstacles.htmlImage,
+      -obstacles.width / 2,
+      -obstacles.height / 2,
+      obstacles.width,
+      obstacles.height
+    )
   }
 
   // bullets
