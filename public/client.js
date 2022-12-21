@@ -193,7 +193,7 @@ function drawPlayer(player) {
 
   ctx.lineWidth = 4;
   // ctx.fillStyle = "#888";
-  ctx.fillStyle = player.color;
+  ctx.fillStyle = player.specialColor ?? player.color;
   ctx.strokeStyle = "#333";
   ctx.strokeRect(radius * 0.8, -0.333 * radius, radius * 1.5, radius * 0.666);
   ctx.fillRect(radius * 0.8, -0.333 * radius, radius * 1.5, radius * 0.666);
@@ -202,7 +202,7 @@ function drawPlayer(player) {
   ctx.arc(0, 0, radius, 0, 2 * Math.PI);
   ctx.stroke();
 
-  ctx.fillStyle = player.color;
+  ctx.fillStyle = player.specialColor ?? player.color;
   ctx.beginPath();
   ctx.arc(0, 0, radius, 0, 2 * Math.PI);
   ctx.fill();
