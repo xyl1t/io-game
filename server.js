@@ -67,6 +67,7 @@ io.on("connection", (socket) => {
     screenWidth: socket.handshake.query.screenWidth,
     screenHeight: socket.handshake.query.screenHeight,
     color: getRandomColor(),
+    specialColor: undefined,
     angle: 0,
     radius: 16,
     name: "",
@@ -94,8 +95,12 @@ io.on("connection", (socket) => {
   });
 
   socket.on("playerUpdate", (player) => {
+    const old = players[player.id];
     players[player.id] = player;
-   // console.log("playerUpdate", player);
+    if (old) {
+      players[player.id].specialColor = old.specialColor;
+    }
+    console.log("playerUpdate", players[player.id]);
   });
 
   socket.on("shoot", (player) => {
@@ -135,12 +140,10 @@ function serverUpdate() {
         const distance = Math.sqrt(distX * distX + distY * distY);
         if (pId != b.playerId && distance <= p.radius + b.radius) {
           p.hp -= b.damage;
-          const origColor = p.color;
-          p.color = "#FF0000";
+          p.specialColor = "#FF0000";
 
-          const myTimeout = setTimeout(()=> {
-            p.color = origColor;
-            clearTimeout(myTimeout);
+          setTimeout(()=> {
+            players[pId].specialColor = undefined;
           }, 100);
 
           delete bullets[bId];
