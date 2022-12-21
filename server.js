@@ -35,7 +35,7 @@ const map = {
 
 const millisBetweenShots = 100;
 const timesOfLastShots = {};
-const playerScores = {};
+let playerScores = [];
 
 function generateObstacles(count) {
   for (let i = 0; i < count; i++) {
@@ -84,7 +84,7 @@ io.on("connection", (socket) => {
 
   socket.on("disconnect", () => {
     delete timesOfLastShots[socket.id];
-    delete playerScores[socket.id];
+    playerScores = playerScores.filter((score) => score.id != socket.id)
     delete players[socket.id];
     delete sockets[socket.id];
     console.log("a player disconnected", players);
@@ -93,7 +93,8 @@ io.on("connection", (socket) => {
   socket.on("join", (player) => {
     players[player.id] = player;
     timesOfLastShots[player.id] = 0;
-    playerScores[player.id] = {name:player.name, score:0};
+    playerScores = playerScores.filter((score) => score.id != player.id)
+    playerScores.push({id:player.id, name:player.name, score:0});
     socket.broadcast.emit("playerJoin", player); // not yet handled in client
   });
 

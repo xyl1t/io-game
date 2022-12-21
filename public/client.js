@@ -111,9 +111,12 @@ function setup() {
   });
 
   socket.on("leaderboardUpdate", (sortedTop10) => {
+    let strToDisplay = ''
     for(let i=0;i<sortedTop10.length;i++) {
+      strToDisplay += `<p>${i+1}. Player: ${sortedTop10[i].name} Score: ${sortedTop10[i].score}</p>`
       
     }
+    $('#server_info').html(strToDisplay)
   });
 }
 
