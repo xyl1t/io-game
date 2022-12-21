@@ -124,8 +124,6 @@ function startGame(e) {
 
 function loop() {
 
-  let tStart = new Date();
-
   ctx.fillStyle = "#fff";
   ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
 
