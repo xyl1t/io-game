@@ -56,8 +56,8 @@ function generateObstacles(count) {
 
 generateObstacles(32);
 
-function newPlayerConnected(socket) {
-  let newPlayer = {
+function getNewPlayer(socket, isDead){
+  return {
     id: socket.id,
     x: 0,
     y: 0,
@@ -70,18 +70,18 @@ function newPlayerConnected(socket) {
     name: "",
     hp: 100,
     speed: 3,
+    dead: isDead || false
   };
-
-  sockets[newPlayer.id] = socket;
-  console.log("a new player connected", players);
-  socket.emit("welcome", newPlayer, map, obstacles);
 }
 
 io.on("connection", (socket) => {
   const token = socket.handshake.auth.token;
   if (token != "actualUser") socket.disconnect(true);
 
-  newPlayerConnected(socket)
+  let newPlayer = getNewPlayer(socket)
+  sockets[newPlayer.id] = socket;
+  console.log("a new player connected", players);
+  socket.emit("welcome", newPlayer, map, obstacles);
 
   socket.on("disconnect", () => {
     delete timesOfLastShots[socket.id];
@@ -92,6 +92,8 @@ io.on("connection", (socket) => {
 
   socket.on("join", (player) => {
     players[player.id] = player;
+    players[player.id].dead = false;
+    players[player.id].hp = 100;
     timesOfLastShots[player.id] = 0;
     socket.broadcast.emit("playerJoin", player); // not yet handled in client
   });
@@ -115,7 +117,6 @@ io.on("connection", (socket) => {
         speed: 16,
         x: player.x,
         y: player.y,
-        specialColor: undefined,
         radius: 6,
         color: player.color,
         range: 1000, // pixels
@@ -152,14 +153,12 @@ function serverUpdate() {
           delete bullets[bId];
         }
         if(p.hp <= 0)
-          deletePlayer(p)
+          playerDied(pId)
       }
     } else {
       delete bullets[bId];
     }
   }
-
-  
 
   for(let socket in sockets){
     sockets[socket].emit("serverUpdate", getVisiblePlayers(players[sockets[socket].id]), getVisibleBullets(players[sockets[socket].id]), calculateVisibleObstacles(players[sockets[socket].id]));
@@ -167,12 +166,8 @@ function serverUpdate() {
 
 }
 
-function deletePlayer(player){
-  let playerId = player.id
-  delete players[playerId];
-  //delete sockets[player.id];
-  console.log("a player has died", players);
-  newPlayerConnected(sockets[playerId])
+function playerDied(playerId){
+  players[playerId] = getNewPlayer(sockets[playerId], true);
   sockets[playerId].emit("died")
 }
 
@@ -210,10 +205,12 @@ function getVisiblePlayers(ownPlayer){
     
     for(let player in players){
       let otherPlayer = players[player];
-      if( otherPlayer.x >= ownX-screenWidth/2 && otherPlayer.x <= ownX+screenWidth/2){  //x-check
-          if(otherPlayer.y >= ownY-screenHeight/2 && otherPlayer.y <= ownY+screenHeight/2)  //y-check
-            visiblePlayers[otherPlayer.id] = otherPlayer;
-      }     //add radius
+      if(!otherPlayer.dead){
+        if( otherPlayer.x >= ownX-screenWidth/2 && otherPlayer.x <= ownX+screenWidth/2){  //x-check
+            if(otherPlayer.y >= ownY-screenHeight/2 && otherPlayer.y <= ownY+screenHeight/2)  //y-check
+              visiblePlayers[otherPlayer.id] = otherPlayer;
+        }     //add radius
+      }
         
     }
  } 
