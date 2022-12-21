@@ -71,7 +71,11 @@ class Player {
     this.name = "";
     this.hp = 100;
     this.speed = 3;
-    this.dead = isDead || false
+    this.dead = isDead || false;
+    this.reachedLeftEnd = false;
+    this.reachedRightEnd = false;
+    this.reachedDownEnd = false;
+    this.reachedUpEnd = false;
   }
 }
 

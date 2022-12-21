@@ -153,14 +153,31 @@ function loop() {
 
   let translateMapX = -player.x
   let translateMapY = -player.y
-  if(player.x * 2 + window.innerWidth >= map.width)
+
+  player.reachedLeftEnd = false
+  player.reachedRightEnd = false
+  player.reachedDownEnd = false
+  player.reachedUpEnd = false
+  //rechts
+  if(player.x * 2 + window.innerWidth >= map.width){
     translateMapX = -(map.width / 2 - window.innerWidth / 2)
-  if(player.x * 2 - window.innerWidth < -map.width)
+    player.reachedRightEnd = true
+  }
+  //links
+  if(player.x * 2 - window.innerWidth < -map.width){
     translateMapX = map.width / 2 - window.innerWidth / 2
-  if(player.y * 2 + window.innerHeight >= map.height)
+    player.reachedLeftEnd = true
+  }
+  //unten
+  if(player.y * 2 + window.innerHeight >= map.height){
     translateMapY = -(map.height / 2 - window.innerHeight / 2)
-  if(player.y * 2 - window.innerHeight < -map.height)
+    player.reachedDownEnd = true
+  }
+  //oben
+  if(player.y * 2 - window.innerHeight < -map.height){
     translateMapY = map.height / 2 - window.innerHeight / 2
+    player.reachedUpEnd = true
+  }
   ctx.translate(translateMapX, translateMapY);
 
   // draw map
@@ -328,8 +345,26 @@ function mousemove(e) {
   mouse.y = e.pageY - canvas.offsetTop;
   mouse.leftDown = (e.buttons & 1) == 1;
   mouse.rightDown = (e.buttons & 2) == 2;
-  const dx = mouse.x - canvas.width / 2;
-  const dy = mouse.y - canvas.height / 2;
+  console.log('expected: ', player.reachedLeftEnd)
+  console.log('actual: ', player)
+
+  let playerX = canvas.width / 2
+  let playerY = canvas.height / 2
+
+  if(player.reachedLeftEnd)
+    playerX = map.width / 2 + player.x
+  
+  if(player.reachedRightEnd)
+    playerX = canvas.width - (map.width / 2 - player.x)
+
+  if(player.reachedUpEnd)
+    playerY = map.height / 2 + player.y
+  
+  if(player.reachedDownEnd)
+    playerY = canvas.height - (map.height / 2 - player.y)
+  
+  const dx = mouse.x - playerX
+  const dy = mouse.y - playerY
   mouse.angle = Math.atan2(dy, dx);
   console.log("Event: mosemove", mouse);
 
