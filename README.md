@@ -1,7 +1,7 @@
 # io-game over WebSockets for project days
 
 **Authors**
-* Thmoas Fischer
+* Thomas Fischer
 * Paul Trattnig
 * Marat Isaw
 * Benjamin Terbul
