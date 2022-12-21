@@ -110,6 +110,14 @@ function setup() {
     }
   });
 
+  socket.on("leaderboardUpdate", (sortedTop10) => {
+    let strToDisplay = ''
+    for(let i=0;i<sortedTop10.length;i++) {
+      strToDisplay += `<tr class="row"><td class="col-2">${i+1}</td><td class="col">${sortedTop10[i].name}</td></tr>`
+      
+    }
+    $('#leaderboard').html(strToDisplay)
+    
   socket.on("died", () => {
     $("#game_elements").css("display", "none");
     $("#settings_elements").css("display", "inline");
@@ -118,6 +126,7 @@ function setup() {
       "jumbotron d-flex align-items-center vertical-center"
     );
     $("#deathText").css("display", "block");
+
   });
 }
 
@@ -134,8 +143,6 @@ function startGame(e) {
 }
 
 function loop() {
-
-  let tStart = new Date();
 
   ctx.fillStyle = "#fff";
   ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);

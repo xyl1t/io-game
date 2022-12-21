@@ -35,6 +35,7 @@ const map = {
 
 const millisBetweenShots = 100;
 const timesOfLastShots = {};
+let leaderboardInfos = [];
 
 function generateObstacles(count) {
   for (let i = 0; i < count; i++) {
@@ -85,6 +86,7 @@ io.on("connection", (socket) => {
 
   socket.on("disconnect", () => {
     delete timesOfLastShots[socket.id];
+    leaderboardInfos = leaderboardInfos.filter((score) => score.id != socket.id)
     delete players[socket.id];
     delete sockets[socket.id];
     console.log("a player disconnected", players);
@@ -95,6 +97,8 @@ io.on("connection", (socket) => {
     players[player.id].dead = false;
     players[player.id].hp = 100;
     timesOfLastShots[player.id] = 0;
+    leaderboardInfos = leaderboardInfos.filter((score) => score.id != player.id)
+    leaderboardInfos.push({id:player.id, name:player.name, score:0});
     socket.broadcast.emit("playerJoin", player); // not yet handled in client
   });
 
@@ -104,7 +108,6 @@ io.on("connection", (socket) => {
     if (old) {
       players[player.id].specialColor = old.specialColor;
     }
-    console.log("playerUpdate", players[player.id]);
   });
 
   socket.on("shoot", (player) => {
@@ -174,6 +177,27 @@ function playerDied(playerId){
 }
 
 setInterval(serverUpdate, updateTime);
+setInterval(updateLeaderboard, 1000);
+
+function updateLeaderboard() {
+  let sortedTop10 = getTopScores(10);
+
+  /*for(let i=0; i < sortedTop10.length; i++) {
+    sortedTop10[i] = {name:players[sortedTop10[i].id].name, score:sortedTop10[i].score};
+  }*/
+  
+  for(let socket in sockets){
+    sockets[socket].emit("leaderboardUpdate", sortedTop10);
+  }
+}
+
+function getTopScores(n){
+  let arr = leaderboardInfos;
+  if(n > arr.length) {
+    n = arr.length;
+  }
+  return arr.sort(function(a,b){ return b.score-a.score }).slice(0,n); //Exception arr.sort(...) is not a function
+}
 
 const PORT = argv.port ?? 8080;
 server.listen(PORT, () => {
