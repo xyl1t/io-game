@@ -140,6 +140,8 @@ function serverUpdate() {
         const distance = Math.sqrt(distX * distX + distY * distY);
         if (pId != b.playerId && distance <= p.radius + b.radius) {
           p.hp -= b.damage;
+          if(p.hp >= 0)
+            deletePlayer(p)
           p.specialColor = "#FF0000";
 
           setTimeout(()=> {
@@ -154,9 +156,16 @@ function serverUpdate() {
     }
   }
 
+  
+
   for(let socket in sockets){
     sockets[socket].emit("serverUpdate", getVisiblePlayers(players[sockets[socket].id]), getVisibleBullets(players[sockets[socket].id]), calculateVisibleObstacles(players[sockets[socket].id]));
   }
+
+}
+
+function deletePlayer(player){
+  delete players[player.id];
 
 }
 
