@@ -192,6 +192,9 @@ function loop() {
     socket.emit("playerUpdate", player);
   }
 
+  player.screenWidth = window.innerWidth;         //adjust render distance to window
+  player.screenHeight = window.innerHeight;
+
   window.requestAnimationFrame(loop);
 }
 

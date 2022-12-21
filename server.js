@@ -120,7 +120,7 @@ io.on("connection", (socket) => {
 });
 
 function serverUpdate() {
-  
+
   for (const bId in bullets) {
     const b = bullets[bId];
     b.range -= b.speed;
