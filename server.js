@@ -115,6 +115,7 @@ io.on("connection", (socket) => {
         speed: 16,
         x: player.x,
         y: player.y,
+        specialColor: undefined,
         radius: 6,
         color: player.color,
         range: 1000, // pixels
@@ -142,8 +143,6 @@ function serverUpdate() {
         const distance = Math.sqrt(distX * distX + distY * distY);
         if (pId != b.playerId && distance <= p.radius + b.radius) {
           p.hp -= b.damage;
-          if(p.hp >= 0)
-            deletePlayer(p)
           p.specialColor = "#FF0000";
 
           setTimeout(()=> {
@@ -152,6 +151,8 @@ function serverUpdate() {
 
           delete bullets[bId];
         }
+        if(p.hp <= 0)
+          deletePlayer(p)
       }
     } else {
       delete bullets[bId];
@@ -167,9 +168,12 @@ function serverUpdate() {
 }
 
 function deletePlayer(player){
-  delete players[player.id];
-  newPlayerConnected(player)
-  sockets[socket].emit("died")
+  let playerId = player.id
+  delete players[playerId];
+  //delete sockets[player.id];
+  console.log("a player has died", players);
+  newPlayerConnected(sockets[playerId])
+  sockets[playerId].emit("died")
 }
 
 setInterval(serverUpdate, updateTime);
