@@ -109,6 +109,10 @@ function setup() {
       player.y = oldY;
     }
   });
+
+  socket.on("died", () => {
+    
+  });
 }
 
 function startGame(e) {

@@ -56,10 +56,7 @@ function generateObstacles(count) {
 
 generateObstacles(32);
 
-io.on("connection", (socket) => {
-  const token = socket.handshake.auth.token;
-  if (token != "actualUser") socket.disconnect(true);
-
+function newPlayerConnected(socket) {
   let newPlayer = {
     id: socket.id,
     x: 0,
@@ -72,14 +69,19 @@ io.on("connection", (socket) => {
     radius: 16,
     name: "",
     hp: 100,
-    speed: 3
+    speed: 3,
   };
 
   sockets[newPlayer.id] = socket;
-  
   console.log("a new player connected", players);
-
   socket.emit("welcome", newPlayer, map, obstacles);
+}
+
+io.on("connection", (socket) => {
+  const token = socket.handshake.auth.token;
+  if (token != "actualUser") socket.disconnect(true);
+
+  newPlayerConnected(socket)
 
   socket.on("disconnect", () => {
     delete timesOfLastShots[socket.id];
@@ -166,7 +168,8 @@ function serverUpdate() {
 
 function deletePlayer(player){
   delete players[player.id];
-
+  newPlayerConnected(player)
+  sockets[socket].emit("died")
 }
 
 setInterval(serverUpdate, updateTime);
