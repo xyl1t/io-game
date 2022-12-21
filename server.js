@@ -33,7 +33,7 @@ const map = {
   height: 5000,
 };
 
-const millisBetweenShots = 1000;
+const millisBetweenShots = 100;
 const timesOfLastShots = {};
 
 function generateObstacles(count) {
