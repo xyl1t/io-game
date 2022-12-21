@@ -93,8 +93,6 @@ function setup() {
     for (const id in obstacles) {
       obstacles[id].htmlImage = document.createElement("img");
       obstacles[id].htmlImage.src = `/img/${obstacles[id].type}.png`;
-      //console.log('htmlImage: ', map)
-      console.log('me: ', me)
     }
   });
 
@@ -152,7 +150,22 @@ function loop() {
 
   ctx.save();
   ctx.translate(canvas.width / 2, canvas.height / 2);
-  ctx.translate(-player.x, -player.y);
+
+  console.log('if left: ', player.x * 2 + window.innerWidth)
+  console.log('if right: ', map.width)
+  let translateMapX = -player.x
+  let translateMapY = -player.y
+  if(player.x * 2 + window.innerWidth >= map.width)
+    translateMapX = -(map.width / 2 - window.innerWidth / 2)
+  if(player.x * 2 - window.innerWidth < -map.width)
+    translateMapX = map.width / 2 - window.innerWidth / 2
+
+
+  if(player.y * 2 + window.innerHeight >= map.height)
+    translateMapY = -(map.height / 2 - window.innerHeight / 2)
+  if(player.y * 2 - window.innerHeight < -map.height)
+    translateMapY = map.height / 2 - window.innerHeight / 2
+  ctx.translate(translateMapX, translateMapY);
 
   // draw map
   if (map.htmlImage) {
@@ -168,6 +181,7 @@ function loop() {
   // players
   drawPlayer(player);
   for (const id in players) {
+    
     if (player.id != id) {
       drawPlayer(players[id]);
     }
@@ -220,6 +234,7 @@ function loop() {
 }
 
 function drawPlayer(player) {
+  console.log('in draw player')
   ctx.save();
   ctx.translate(player.x, player.y);
   ctx.rotate(player.angle);
