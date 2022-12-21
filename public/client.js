@@ -13,6 +13,9 @@ let map = {};
 let obstacles = {};
 let visibleObstacleIds = {};
 
+let renderScaleX = 1;
+let renderScaleY = 1;
+
 const mouse = {
   x: 0,
   y: 0,
@@ -145,11 +148,15 @@ function startGame(e) {
 
 function loop() {
 
+  renderScaleX =  1/window.devicePixelRatio;
+  renderScaleY = 1/window.devicePixelRatio;
+
   ctx.fillStyle = "#fff";
   ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
 
   ctx.save();
   ctx.translate(canvas.width / 2, canvas.height / 2);
+  ctx.scale(renderScaleX,renderScaleY);
   ctx.translate(-player.x, -player.y);
 
   // draw map
@@ -298,7 +305,7 @@ function mousedown(e) {
   mouse.y = e.pageY - canvas.offsetTop;
   mouse.leftDown = (e.buttons & 1) == 1;
   mouse.rightDown = (e.buttons & 2) == 2;
-  console.log("Event: mousedown", mouse);
+  //console.log("Event: mousedown", mouse);
 
   socket.emit("shoot", player);
 }
@@ -308,7 +315,7 @@ function mouseup(e) {
   mouse.y = e.pageY - canvas.offsetTop;
   mouse.leftDown = (e.buttons & 1) == 1;
   mouse.rightDown = (e.buttons & 2) == 2;
-  console.log("Event: mouseup", mouse);
+  //console.log("Event: mouseup", mouse);
 }
 
 function mousemove(e) {
@@ -319,7 +326,7 @@ function mousemove(e) {
   const dx = mouse.x - canvas.width / 2;
   const dy = mouse.y - canvas.height / 2;
   mouse.angle = Math.atan2(dy, dx);
-  console.log("Event: mosemove", mouse);
+  //console.log("Event: mosemove", mouse);
 
   player.angle = mouse.angle;
 
@@ -340,15 +347,15 @@ function wheel(e) {
   const finalX = (Math.max(-100, Math.min(100, deltaX)) / 100) * 100;
   const finalY = (Math.max(-100, Math.min(100, deltaY)) / 100) * 100;
 
-  console.log("Event: wheel", finalX, finalY);
+  //console.log("Event: wheel", finalX, finalY);
 }
 
 function keydown(e) {
   keyboard[e.key.toLowerCase()] = true;
-  console.log("down", e.key.toLowerCase());
+  //console.log("down", e.key.toLowerCase());
 }
 
 function keyup(e) {
   keyboard[e.key.toLowerCase()] = false;
-  console.log("up", e.key.toLowerCase());
+  //console.log("up", e.key.toLowerCase());
 }
