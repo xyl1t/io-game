@@ -158,7 +158,8 @@ function setup() {
     $("#leaderboard").html(strToDisplay);
   });
 
-  socket.on("died", () => {
+  socket.on("died", (newPlayer) => {
+    player = newPlayer
     $("#game_elements").css("display", "none");
     $("#settings_elements").css("display", "inline");
     $("#died_screen").css("display", "inline");
@@ -178,6 +179,7 @@ function startGame(e) {
   $("#deathText").css("display", "none");
 
   player.name = $("#username").val();
+  player.dead = false;
   socket.emit("join", player);
 }
 
