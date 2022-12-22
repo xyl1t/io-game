@@ -189,8 +189,37 @@ function loop() {
 
   ctx.save();
   ctx.translate(canvas.width / 2, canvas.height / 2);
+
   ctx.scale(renderScaleWidth, renderScaleHeight);
-  ctx.translate(-player.x, -player.y);
+
+  let translateMapX = -player.x
+  let translateMapY = -player.y
+
+  player.reachedLeftEnd = false
+  player.reachedRightEnd = false
+  player.reachedDownEnd = false
+  player.reachedUpEnd = false
+  //rechts
+  if(player.x * 2 + window.innerWidth >= map.width){
+    translateMapX = -(map.width / 2 - window.innerWidth / 2)
+    player.reachedRightEnd = true
+  }
+  //links
+  if(player.x * 2 - window.innerWidth < -map.width){
+    translateMapX = map.width / 2 - window.innerWidth / 2
+    player.reachedLeftEnd = true
+  }
+  //unten
+  if(player.y * 2 + window.innerHeight >= map.height){
+    translateMapY = -(map.height / 2 - window.innerHeight / 2)
+    player.reachedDownEnd = true
+  }
+  //oben
+  if(player.y * 2 - window.innerHeight < -map.height){
+    translateMapY = map.height / 2 - window.innerHeight / 2
+    player.reachedUpEnd = true
+  }
+  ctx.translate(translateMapX, translateMapY);
 
   // draw map
   if (map.htmlImage) {
@@ -211,6 +240,7 @@ function loop() {
   // players
   drawPlayer(player);
   for (const id in players) {
+    
     if (player.id != id) {
       drawPlayer(players[id]);
     }
@@ -413,8 +443,28 @@ function mousemove(e) {
   mouse.y = e.pageY - canvas.offsetTop;
   mouse.leftDown = (e.buttons & 1) == 1;
   mouse.rightDown = (e.buttons & 2) == 2;
-  const dx = mouse.x - canvas.width / 2;
-  const dy = mouse.y - canvas.height / 2;
+  
+
+  let playerX = canvas.width / 2
+  let playerY = canvas.height / 2
+
+  console.log('playerX: ', playerX)
+  console.log('playerY: ', playerY)
+
+  if(player.reachedLeftEnd)
+    playerX = map.width / 2 + player.x
+  
+  if(player.reachedRightEnd)
+    playerX = canvas.width - (map.width / 2 - player.x)
+
+  if(player.reachedUpEnd)
+    playerY = map.height / 2 + player.y
+  
+  if(player.reachedDownEnd)
+    playerY = canvas.height - (map.height / 2 - player.y)
+  
+  const dx = mouse.x - playerX
+  const dy = mouse.y - playerY
   mouse.angle = Math.atan2(dy, dx);
 
   player.angle = mouse.angle;

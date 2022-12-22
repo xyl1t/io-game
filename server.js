@@ -89,8 +89,12 @@ class Player {
     this.radius = 16;
     this.name = "";
     this.hp = 100;
-    this.speed = 150;
     this.dead = isDead || false;
+    this.reachedLeftEnd = false;
+    this.reachedRightEnd = false;
+    this.reachedDownEnd = false;
+    this.reachedUpEnd = false;
+    this.speed = 150;
   }
 }
 
@@ -443,21 +447,13 @@ function calculateVisibleDecoSprites(ownPlayer) {
     let ownY = ownPlayer.y;
     let screenWidth = ownPlayer.screenWidth;
     let screenHeight = ownPlayer.screenHeight;
-
-    for (let decoSprite in decoSprites) {
-      let dsToCheck = decoSprites[decoSprite];
-      if (
-        dsToCheck.x + dsToCheck.sizeX / 2 >= ownX - screenWidth / 2 &&
-        dsToCheck.x - dsToCheck.sizeX / 2 <= ownX + screenWidth / 2
-      ) {
-        //x-check
-        if (
-          dsToCheck.y + dsToCheck.sizeY / 2 >= ownY - screenHeight / 2 &&
-          dsToCheck.y - dsToCheck.sizeY / 2 <= ownY + screenHeight / 2
-        )
-          //y-check
-          visibleDecoSpriteIds[dsToCheck.id] = dsToCheck.id;
-      }
+  
+    for(let ds in decoSprites){
+        let dsToCheck = decoSprites[ds];
+        if(dsToCheck.x+dsToCheck.sizeX/2 >= ownX-screenWidth && dsToCheck.x-dsToCheck.sizeX/2 <= ownX+screenWidth){  //x-check
+            if(dsToCheck.y+dsToCheck.sizeY/2 >= ownY-screenHeight && dsToCheck.y-dsToCheck.sizeY/2 <= ownY+screenHeight)  //y-check
+              visibleDecoSpriteIds[dsToCheck.id] = dsToCheck.id; 
+        }
     }
 
     return visibleDecoSpriteIds;
