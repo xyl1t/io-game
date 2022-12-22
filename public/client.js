@@ -258,6 +258,10 @@ function loop() {
     socket.emit("playerMove", player, moveX, moveY);
   }
 
+  if(mouse.leftDown || mouse.rightDown) {
+    socket.emit("shoot", player);
+  }
+
   player.screenWidth = window.innerWidth; //adjust render distance to window
   player.screenHeight = window.innerHeight;
 
@@ -357,8 +361,6 @@ function mousedown(e) {
   mouse.leftDown = (e.buttons & 1) == 1;
   mouse.rightDown = (e.buttons & 2) == 2;
   console.log("Event: mousedown");
-
-  socket.emit("shoot", player);
 }
 
 function mouseup(e) {
