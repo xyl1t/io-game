@@ -89,6 +89,7 @@ function setup() {
   );
   canvas.addEventListener("mousedown", mousedown, false);
   canvas.addEventListener("mouseup", mouseup, false);
+  canvas.addEventListener("mouseleave", mouseleave, false);
   canvas.addEventListener("mousemove", mousemove, false);
   canvas.addEventListener("wheel", wheel, false);
 
@@ -396,6 +397,13 @@ function mouseup(e) {
   mouse.y = e.pageY - canvas.offsetTop;
   mouse.leftDown = (e.buttons & 1) == 1;
   mouse.rightDown = (e.buttons & 2) == 2;
+}
+
+function mouseleave(e) {
+  mouse.x = e.pageX - canvas.offsetLeft;
+  mouse.y = e.pageY - canvas.offsetTop;
+  mouse.leftDown = false;
+  mouse.rightDown = false;
 }
 
 function mousemove(e) {
