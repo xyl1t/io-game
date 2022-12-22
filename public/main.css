@@ -28,6 +28,12 @@
   height: 50%;
   border: solid black 1px;
   pointer-events: none;
+  z-index: 1;
+  font-size: 1vw;
+}
+
+canvas{
+  z-index: -1;
 }
 
 #scores{

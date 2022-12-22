@@ -14,6 +14,12 @@ let decoSprites = {};
 let visibleDecoSpriteIds = {};
 let obstacles = [];
 
+let renderScaleWidth = 1;
+let renderScaleHeight = 1;
+
+let constWidth = 800;
+let constHeight = 800;
+
 const mouse = {
   x: 0,
   y: 0,
@@ -53,11 +59,31 @@ function setup() {
   const canvas = document.querySelector("#canvas");
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
+
+  const accountForRatio = () => {
+      if (window.innerWidth > window.innerHeight) {
+        let ratio = window.innerHeight / constHeight;
+        // ratio = Math.max(0.7, ratio);
+        renderScaleWidth = ratio;
+        renderScaleHeight = ratio;
+      }
+      else {
+        let ratio = window.innerWidth / constWidth;
+        // ratio = Math.max(0.7, ratio);
+        renderScaleWidth = ratio;
+        renderScaleHeight = ratio;
+      }
+  }
+  accountForRatio();
   window.addEventListener(
     "resize",
     () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
+
+      accountForRatio();
+      // player.screenWidth = window.innerWidth*renderScaleWidth;         //adjust render distance to window
+      // player.screenHeight = window.innerHeight*renderScaleWidth;       //multiply with pixel-ratio to get actual height and width to render
     },
     false
   );
@@ -131,7 +157,8 @@ function setup() {
     $("#leaderboard").html(strToDisplay);
   });
 
-  socket.on("died", () => {
+  socket.on("died", (newPlayer) => {
+    player = newPlayer
     $("#game_elements").css("display", "none");
     $("#settings_elements").css("display", "inline");
     $("#died_screen").css("display", "inline");
@@ -151,6 +178,7 @@ function startGame(e) {
   $("#deathText").css("display", "none");
 
   player.name = $("#username").val();
+  player.dead = false;
   socket.emit("join", player);
 }
 
@@ -160,6 +188,7 @@ function loop() {
 
   ctx.save();
   ctx.translate(canvas.width / 2, canvas.height / 2);
+  ctx.scale(renderScaleWidth, renderScaleHeight);
   ctx.translate(-player.x, -player.y);
 
   // draw map
@@ -256,6 +285,10 @@ function loop() {
     moveY /= len;
 
     socket.emit("playerMove", player, moveX, moveY);
+  }
+
+  if(mouse.leftDown || mouse.rightDown) {
+    socket.emit("shoot", player);
   }
 
   player.screenWidth = window.innerWidth; //adjust render distance to window
@@ -356,7 +389,6 @@ function mousedown(e) {
   mouse.y = e.pageY - canvas.offsetTop;
   mouse.leftDown = (e.buttons & 1) == 1;
   mouse.rightDown = (e.buttons & 2) == 2;
-  console.log("Event: mousedown");
 
   socket.emit("shoot", player);
 }
@@ -366,7 +398,6 @@ function mouseup(e) {
   mouse.y = e.pageY - canvas.offsetTop;
   mouse.leftDown = (e.buttons & 1) == 1;
   mouse.rightDown = (e.buttons & 2) == 2;
-  console.log("Event: mouseup");
 }
 
 function mousemove(e) {
@@ -377,7 +408,6 @@ function mousemove(e) {
   const dx = mouse.x - canvas.width / 2;
   const dy = mouse.y - canvas.height / 2;
   mouse.angle = Math.atan2(dy, dx);
-  console.log("Event: mosemove");
 
   player.angle = mouse.angle;
   socket.emit("mouseMove", player);
@@ -397,17 +427,17 @@ function wheel(e) {
   const finalX = (Math.max(-100, Math.min(100, deltaX)) / 100) * 100;
   const finalY = (Math.max(-100, Math.min(100, deltaY)) / 100) * 100;
 
-  console.log("Event: wheel", finalX, finalY);
+  //console.log("Event: wheel", finalX, finalY);
 }
 
 function keydown(e) {
   keyboard[e.key.toLowerCase()] = true;
-  console.log("down", e.key.toLowerCase());
+  //console.log("down", e.key.toLowerCase());
 }
 
 function keyup(e) {
   keyboard[e.key.toLowerCase()] = false;
-  console.log("up", e.key.toLowerCase());
+  //console.log("up", e.key.toLowerCase());
 }
 
 function dist(x1, y1, x2, y2) {
