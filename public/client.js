@@ -13,8 +13,11 @@ let map = {};
 let obstacles = {};
 let visibleObstacleIds = {};
 
-let renderScaleX = 1;
-let renderScaleY = 1;
+let renderScaleWidth = 1;
+let renderScaleHeight = 1;
+
+let constWidth = 800;
+let constHeight = 800;
 
 const mouse = {
   x: 0,
@@ -55,11 +58,31 @@ function setup() {
   const canvas = document.querySelector("#canvas");
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
+
+  const accountForRatio = () => {
+      if (window.innerWidth > window.innerHeight) {
+        let ratio = window.innerHeight / constHeight;
+        // ratio = Math.max(0.7, ratio);
+        renderScaleWidth = ratio;
+        renderScaleHeight = ratio;
+      }
+      else {
+        let ratio = window.innerWidth / constWidth;
+        // ratio = Math.max(0.7, ratio);
+        renderScaleWidth = ratio;
+        renderScaleHeight = ratio;
+      }
+  }
+  accountForRatio();
   window.addEventListener(
     "resize",
     () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
+
+      accountForRatio();
+      // player.screenWidth = window.innerWidth*renderScaleWidth;         //adjust render distance to window
+      // player.screenHeight = window.innerHeight*renderScaleWidth;       //multiply with pixel-ratio to get actual height and width to render
     },
     false
   );
@@ -147,15 +170,12 @@ function startGame(e) {
 }
 
 function loop() {
-  renderScaleX =  1/window.devicePixelRatio;
-  renderScaleY = 1/window.devicePixelRatio;
-
   ctx.fillStyle = "#fff";
   ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
 
   ctx.save();
   ctx.translate(canvas.width / 2, canvas.height / 2);
-  ctx.scale(renderScaleX,renderScaleY);
+  ctx.scale(renderScaleWidth, renderScaleHeight);
   ctx.translate(-player.x, -player.y);
 
   // draw map
@@ -216,9 +236,6 @@ function loop() {
     player.x += player.speed * deltaTime;
     socket.emit("playerUpdate", player);
   }
-
-  player.screenWidth = window.innerWidth*window.devicePixelRatio;         //adjust render distance to window
-  player.screenHeight = window.innerHeight*window.devicePixelRatio;       //multiply with pixel-ratio to get actual height and width to render
 
   window.requestAnimationFrame(loop);
 }
