@@ -1,6 +1,5 @@
 * {
   font-family: 'Roboto', sans-serif, "Arial";
-  cursor: url(http://www.rw-designer.com/cursor-extern.php?id=150930), auto;
 }
 
 .vertical-center {
@@ -34,6 +33,7 @@
 
 canvas{
   z-index: -1;
+  cursor: url(http://www.rw-designer.com/cursor-extern.php?id=150930), auto;
 }
 
 #scores{
