@@ -187,6 +187,8 @@ function loop() {
   ctx.save();
   ctx.translate(canvas.width / 2, canvas.height / 2);
 
+  ctx.scale(renderScaleWidth, renderScaleHeight);
+
   let translateMapX = -player.x
   let translateMapY = -player.y
 
@@ -215,9 +217,6 @@ function loop() {
     player.reachedUpEnd = true
   }
   ctx.translate(translateMapX, translateMapY);
-
-  ctx.scale(renderScaleWidth, renderScaleHeight);
-  ctx.translate(-player.x, -player.y);
 
   // draw map
   if (map.htmlImage) {
@@ -434,11 +433,13 @@ function mousemove(e) {
   mouse.y = e.pageY - canvas.offsetTop;
   mouse.leftDown = (e.buttons & 1) == 1;
   mouse.rightDown = (e.buttons & 2) == 2;
-  console.log('expected: ', player.reachedLeftEnd)
-  console.log('actual: ', player)
+  
 
   let playerX = canvas.width / 2
   let playerY = canvas.height / 2
+
+  console.log('playerX: ', playerX)
+  console.log('playerY: ', playerY)
 
   if(player.reachedLeftEnd)
     playerX = map.width / 2 + player.x
