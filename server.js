@@ -325,6 +325,7 @@ function serverUpdate() {
 
 function playerDied(playerId){
   let newPlayer = new Player(sockets[playerId], true);
+  leaderboardInfos = leaderboardInfos.filter((player) => player.id != playerId)
   players[playerId] = newPlayer;
   sockets[playerId].emit("died", newPlayer);
 }
