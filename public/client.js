@@ -285,6 +285,10 @@ function loop() {
     socket.emit("playerMove", player, moveX, moveY);
   }
 
+  if(mouse.leftDown || mouse.rightDown) {
+    socket.emit("shoot", player);
+  }
+
   player.screenWidth = window.innerWidth; //adjust render distance to window
   player.screenHeight = window.innerHeight;
 
