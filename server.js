@@ -152,8 +152,6 @@ io.on("connection", (socket) => {
 
   socket.on("join", (player) => {
     players[player.id] = player;
-    players[player.id].dead = false;
-    players[player.id].hp = 100;
     timesOfLastShots[player.id] = 0;
     leaderboardInfos = leaderboardInfos.filter(
       (score) => score.id != player.id
@@ -329,9 +327,10 @@ function serverUpdate() {
   }
 }
 
-function playerDied(playerId) {
-  players[playerId] = new Player(sockets[playerId], true);
-  sockets[playerId].emit("died");
+function playerDied(playerId){
+  let newPlayer = new Player(sockets[playerId], true);
+  players[playerId] = newPlayer;
+  sockets[playerId].emit("died", newPlayer);
 }
 
 setInterval(serverUpdate, updateTime);
