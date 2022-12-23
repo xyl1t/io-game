@@ -7,16 +7,23 @@
 /*************************************************************************** */
 "use strict";
 
-const yargs = require("yargs/yargs");
-const { hideBin } = require("yargs/helpers");
+import yargs from "yargs/yargs";
+import { hideBin } from "yargs/helpers";
 const argv = yargs(hideBin(process.argv)).argv;
 
-const express = require("express");
+import express from "express";
 const app = express();
-const http = require("http");
+import http from "http";
 const server = http.createServer(app);
-const { Server } = require("socket.io");
+import { Server } from "socket.io";
 const io = new Server(server);
+
+import {
+  randBetween,
+  dist,
+  genId,
+  getRandomColor,
+} from "./helpers/helperFunctions.js";
 
 app.use(express.static("public"));
 
@@ -75,22 +82,23 @@ class Obstacle {
 class Player {
   constructor(socket, isDead) {
     this.id = socket.id;
+    this.name = "";
+    this.hp = 100;
+    this.speed = 150;
     this.accX = 0;
     this.accY = 0;
     this.velX = 0;
     this.velY = 0;
     this.x = 0;
     this.y = 0;
-    this.screenWidth = socket.handshake.query.screenWidth;
-    this.screenHeight = socket.handshake.query.screenHeight;
+    this.turretAngle = 0;
+    this.movementAngle = 0;
     this.color = getRandomColor();
     this.specialColor = undefined;
-    this.angle = 0;
     this.radius = 16;
-    this.name = "";
-    this.hp = 100;
-    this.speed = 150;
     this.dead = isDead || false;
+    this.screenWidth = socket.handshake.query.screenWidth;
+    this.screenHeight = socket.handshake.query.screenHeight;
   }
 }
 
@@ -120,16 +128,16 @@ obstacles.push(
   ])
 );
 
-obstacles.push(
-  new Obstacle("line", 8, [
-    { x: randBetween(-300, 300), y: randBetween(-300, 300) },
-    { x: randBetween(-300, 300), y: randBetween(-300, 300) },
-  ])
-);
-
 io.on("connection", (socket) => {
   const token = socket.handshake.auth.token;
   if (token != "actualUser") socket.disconnect(true);
+
+  // obstacles.push(
+  //   new Obstacle("line", 8, [
+  //     { x: randBetween(-500, 500), y: randBetween(-500, 500) },
+  //     { x: randBetween(-500, 500), y: randBetween(-500, 500) },
+  //   ])
+  // );
 
   let newPlayer = new Player(socket);
   sockets[newPlayer.id] = socket;
@@ -137,10 +145,10 @@ io.on("connection", (socket) => {
   socket.emit("welcome", newPlayer, map, decoSprites, obstacles);
 
   socket.on("disconnect", () => {
-    delete timesOfLastShots[socket.id];
     leaderboardInfos = leaderboardInfos.filter(
       (score) => score.id != socket.id
     );
+    delete timesOfLastShots[socket.id];
     delete players[socket.id];
     delete sockets[socket.id];
     console.log("a player disconnected", players);
@@ -158,14 +166,14 @@ io.on("connection", (socket) => {
 
   socket.on("mouseMove", (player) => {
     if (players[player.id]) {
-      players[player.id].angle = player.angle;
+      players[player.id].turretAngle = player.turretAngle;
     }
   });
 
-  socket.on("playerMove", (player, moveX, moveY) => {
+  socket.on("playerMove", (player) => {
     if (players[player.id]) {
-      players[player.id].accX = moveX * player.speed;
-      players[player.id].accY = moveY * player.speed;
+      players[player.id].accX = player.speed * Math.cos(player.movementAngle);
+      players[player.id].accY = player.speed * Math.sin(player.movementAngle);
     }
   });
 
@@ -175,13 +183,13 @@ io.on("connection", (socket) => {
       bullets[bulletId] = {
         id: bulletId,
         playerId: player.id,
-        angle: player.angle,
+        angle: player.turretAngle,
         speed: 100,
-        x: player.x,
-        y: player.y,
+        x: player.x + (player.radius*1.8 + 6) * Math.cos(player.turretAngle),
+        y: player.y + (player.radius*1.8 + 6) * Math.sin(player.turretAngle),
         radius: 6,
         color: player.color,
-        range: 1000, // pixels
+        range: 3000, // pixels
         damage: 10, // hp
       };
       timesOfLastShots[player.id] = Date.now();
@@ -199,14 +207,14 @@ function serverUpdate() {
   for (let iSim = 0; iSim < simulationUpdates; iSim++) {
     for (const pId in players) {
       const p = players[pId];
+      p.velX *= 0.96;
+      p.velY *= 0.96;
       p.velX += p.accX * simDeltaTime;
       p.velY += p.accY * simDeltaTime;
       p.x += p.velX * simDeltaTime;
       p.y += p.velY * simDeltaTime;
       p.accX = 0;
       p.accY = 0;
-      p.velX *= 0.95;
-      p.velY *= 0.95;
     }
 
     for (const bId in bullets) {
@@ -302,13 +310,11 @@ function serverUpdate() {
             // static collision has occurred
             const overlap = 1.0 * (distance - bullet.radius - obs.radius);
 
-            delete bullets[bullet.id]
+            delete bullets[bullet.id];
             // bullet.x -= (overlap * (bullet.x - closestPointX)) / distance;
             // bullet.y -= (overlap * (bullet.y - closestPointY)) / distance;
           }
         }
-
-
       }
     }
   }
@@ -323,9 +329,9 @@ function serverUpdate() {
   }
 }
 
-function playerDied(playerId){
+function playerDied(playerId) {
   let newPlayer = new Player(sockets[playerId], true);
-  leaderboardInfos = leaderboardInfos.filter((player) => player.id != playerId)
+  leaderboardInfos = leaderboardInfos.filter((player) => player.id != playerId);
   players[playerId] = newPlayer;
   sockets[playerId].emit("died", newPlayer);
 }
@@ -335,10 +341,6 @@ setInterval(updateLeaderboard, 1000);
 
 function updateLeaderboard() {
   let sortedTop10 = getTopScores(10);
-
-  /*for(let i=0; i < sortedTop10.length; i++) {
-    sortedTop10[i] = {name:players[sortedTop10[i].id].name, score:sortedTop10[i].score};
-  }*/
 
   for (let socket in sockets) {
     sockets[socket].emit("leaderboardUpdate", sortedTop10);
@@ -362,21 +364,8 @@ server.listen(PORT, () => {
   console.log(`listening on *:${PORT}`);
 });
 
-function getRandomColor() {
-  return `rgb(${Math.floor(Math.random() * 255)},${Math.floor(
-    Math.random() * 255
-  )},${Math.floor(Math.random() * 255)})`;
-}
-
-function genId() {
-  return Math.floor((1 + Math.random()) * 0x100000000)
-    .toString(16)
-    .substring(1)
-    .toString();
-  player;
-}
-
 function getVisiblePlayers(ownPlayer) {
+  return players;
   let visiblePlayers = {};
 
   if (ownPlayer) {
@@ -407,6 +396,7 @@ function getVisiblePlayers(ownPlayer) {
 }
 
 function getVisibleBullets(ownPlayer) {
+  return bullets;
   let visibleBullets = {};
 
   if (ownPlayer) {
@@ -436,7 +426,9 @@ function getVisibleBullets(ownPlayer) {
 }
 
 function calculateVisibleDecoSprites(ownPlayer) {
-  let visibleDecoSpriteIds = {};
+  // console.log(Object.keys(decoSprites));
+  return Object.keys(decoSprites);
+  let visibleDecoSpriteIds = [];
 
   if (ownPlayer) {
     let ownX = ownPlayer.x;
@@ -456,139 +448,10 @@ function calculateVisibleDecoSprites(ownPlayer) {
           dsToCheck.y - dsToCheck.sizeY / 2 <= ownY + screenHeight / 2
         )
           //y-check
-          visibleDecoSpriteIds[dsToCheck.id] = dsToCheck.id;
+          visibleDecoSpriteIds.push(dsToCheck.id);
       }
     }
 
     return visibleDecoSpriteIds;
   }
-}
-
-// CIRCLE/RECTANGLE
-function circleRect(cx, cy, radius, rx, ry, rw, rh) {
-  // temporary variables to set edges for testing
-  let testX = cx;
-  let testY = cy;
-
-  // which edge is closest?
-  if (cx < rx) testX = rx; // test left edge
-  else if (cx > rx + rw) testX = rx + rw; // right edge
-  if (cy < ry) testY = ry; // top edge
-  else if (cy > ry + rh) testY = ry + rh; // bottom edge
-
-  // get distance from closest edges
-  let distX = cx - testX;
-  let distY = cy - testY;
-  let distance = Math.sqrt(distX * distX + distY * distY);
-
-  // if the distance is less than the radius, collision!
-  if (distance <= radius) {
-    return true;
-  }
-  return false;
-}
-
-// obstacles/circle
-function checkPlayerObsCollision(player, obs) {
-  for (let i = 0; i < obs.coords.length - 1; i++) {
-    const collision = lineCircle(
-      obs.coords[i].x,
-      obs.coords[i].y,
-      obs.coords[i + 1].x,
-      obs.coords[i + 1].y,
-      player.x,
-      player.y,
-      player.radius
-    );
-    if (collision) {
-      return collision;
-    }
-  }
-  return false;
-}
-
-// LINE/CIRCLE
-function lineCircle(x1, y1, x2, y2, cx, cy, r) {
-  // is either end INSIDE the circle?
-  // if so, return true immediately
-  let inside1 = pointCircle(x1, y1, cx, cy, r);
-  let inside2 = pointCircle(x2, y2, cx, cy, r);
-  if (inside1 || inside2) {
-    return inside1 || inside2;
-  }
-
-  // get length of the line
-  let distX = x1 - x2;
-  let distY = y1 - y2;
-  let len = Math.sqrt(distX * distX + distY * distY);
-
-  // get dot product of the line and circle
-  let dot = ((cx - x1) * (x2 - x1) + (cy - y1) * (y2 - y1)) / Math.pow(len, 2);
-
-  // find the closest point on the line
-  let closestX = x1 + dot * (x2 - x1);
-  let closestY = y1 + dot * (y2 - y1);
-
-  // is this point actually on the line segment?
-  // if so keep going, but if not, return false
-  let onSegment = linePoint(x1, y1, x2, y2, closestX, closestY);
-  if (!onSegment) return false;
-
-  // get distance to closest point
-  distX = closestX - cx;
-  distY = closestY - cy;
-  let distance = Math.sqrt(distX * distX + distY * distY);
-
-  if (distance <= r) {
-    // return true;
-    return r - distance;
-  }
-  return false;
-}
-
-// POINT/CIRCLE
-function pointCircle(px, py, cx, cy, r) {
-  // get distance between the point and circle's center
-  // using the Pythagorean Theorem
-  let distX = px - cx;
-  let distY = py - cy;
-  let distance = Math.sqrt(distX * distX + distY * distY);
-
-  // if the distance is less than the circle's
-  // radius the point is inside!
-  if (distance <= r) {
-    return r - distance;
-  }
-  return false;
-}
-
-function dist(x1, y1, x2, y2) {
-  return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
-}
-
-// LINE/POINT
-function linePoint(x1, y1, x2, y2, px, py) {
-  // get distance from the point to the two ends of the line
-  let d1 = dist(px, py, x1, y1);
-  let d2 = dist(px, py, x2, y2);
-
-  // get the length of the line
-  let lineLen = dist(x1, y1, x2, y2);
-
-  // since floats are so minutely accurate, add
-  // a little buffer zone that will give collision
-  let buffer = 0.1; // higher # = less accurate
-
-  // if the two distances are equal to the line's
-  // length, the point is on the line!
-  // note we use the buffer here to give a range,
-  // rather than one #
-  if (d1 + d2 >= lineLen - buffer && d1 + d2 <= lineLen + buffer) {
-    return true;
-  }
-  return false;
-}
-
-function randBetween(min, max) {
-  return Math.random() * (max - min) + min;
 }
