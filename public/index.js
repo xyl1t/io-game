@@ -1,32 +1,7 @@
+import { game } from "/game.js";
+
 // global variables
 let ctx;
-let socket;
-
-let players = {};
-let bullets = {};
-let randomNumber = Math.floor(Math.random() * 2) + 1;
-
-let map = {};
-let decoSprites = {};
-let visibleDecoSpriteIds = [];
-let obstacles = [];
-
-let renderScale = 1;
-let constWidth = 1200;
-let constHeight = constWidth * (9/16);
-
-const mouse = {
-  x: 0,
-  y: 0,
-  angle: 0,
-  scrollX: 0,
-  scrollY: 0,
-  leftDown: false,
-  rightDown: false,
-};
-const keyboard = {};
-
-let player = {};
 
 let curTime = Date.now();
 let lastTime = Date.now();
@@ -37,99 +12,83 @@ $(() => {
 });
 
 function setup() {
-  $("#start_game").click(startGame);
-
-  // Execute a function when the user presses a key on the keyboard
-  document
-    .getElementById("username")
-    .addEventListener("keypress", function (event) {
-      // If the user presses the "Enter" key on the keyboard
-      if (event.key === "Enter") {
-        startGame(event);
-      }
-    });
-
-  // setup client
+  // setup client /////////////////////////////////////////////////////////////
   console.log("Loading canvas and context...");
   const canvas = document.querySelector("#canvas");
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-
-  const accountForRatio = () => {
-      if (window.innerWidth > window.innerHeight * (constWidth / constHeight)) {
-        renderScale = Math.max(0.7, window.innerHeight / constHeight);
-      } else {
-        renderScale = Math.max(0.7, window.innerWidth / constWidth);
-      }
-  }
-  accountForRatio();
-  window.addEventListener(
-    "resize",
-    () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      accountForRatio();
-    },
-    false
-  );
+  resize(); // initialize render scale and canvas size and send that to the server
+  window.addEventListener("resize", resize, false);
   canvas.addEventListener("mousedown", mousedown, false);
   canvas.addEventListener("mouseup", mouseup, false);
   canvas.addEventListener("mouseleave", mouseleave, false);
   canvas.addEventListener("mousemove", mousemove, false);
   canvas.addEventListener("wheel", wheel, false);
-
   window.addEventListener("keydown", keydown, true);
   window.addEventListener("keyup", keyup, true);
+
+  $("#btnStartGame").click(startClick);
+  $("#inputUsername").keypress((e) => {
+    if (event.key === "Enter") {
+      $("#btnStartGame").click();
+    }
+  });
 
   // disabling alpha for performance.... or maybe not
   ctx = canvas.getContext("2d");
 
-  // socket stuff ////////////////////////////////////////
+  // socket stuff /////////////////////////////////////////////////////////////
 
   console.log("Establishing connection...");
-  socket = io({
+  game.socket = io({
     auth: {
       token: "actualUser", // authorize as a legit user
     },
-    query: {
-      screenWidth: window.innerWidth,
-      screenHeight: window.innerHeight,
-    },
   });
 
-  socket.on(
+  game.socket.on(
     "welcome",
-    (me, mapFromServer, decoSpritesFromServer, obstaclesFromServer) => {
-      player = me;
+    (socketId, mapFromServer, decoSpritesFromServer, obstaclesFromServer) => {
+      game.player.id = socketId;
 
-      map = mapFromServer;
-      map.htmlImage = document.createElement("img");
-      map.htmlImage.src = `/img/${map.name}.png`;
+      game.map = mapFromServer;
+      game.map.htmlImage = document.createElement("img");
+      game.map.htmlImage.src = `/img/${game.map.name}.png`;
 
-      decoSprites = decoSpritesFromServer;
-      for (const id in decoSprites) {
-        decoSprites[id].htmlImage = document.createElement("img");
-        decoSprites[id].htmlImage.src = `/img/${decoSprites[id].type}.png`;
+      game.map.decoSprites = decoSpritesFromServer;
+      for (const id in game.map.decoSprites) {
+        game.map.decoSprites[id].htmlImage = document.createElement("img");
+        game.map.decoSprites[
+          id
+        ].htmlImage.src = `/img/${game.map.decoSprites[id].type}.png`;
       }
 
-      obstacles = obstaclesFromServer;
+      game.obstacles = obstaclesFromServer;
+
+      $("#btnStartGame").removeAttr("disabled");
+      $("#inputUsername").removeAttr("disabled").focus();
     }
   );
 
-  socket.on(
+  game.socket.on("playerJoin", (newPlayer) => {
+    if (game.player.id == newPlayer.id) {
+      game.player = newPlayer;
+      game.onJoinCallback();
+    }
+  });
+
+  game.socket.on(
     "serverUpdate",
     (playersFromServer, bulletsFromServer, decoSpriteIds) => {
-      players = playersFromServer;
-      bullets = bulletsFromServer;
-      visibleDecoSpriteIds = decoSpriteIds;
+      game.players = playersFromServer;
+      game.bullets = bulletsFromServer;
+      game.visibleDecoSpriteIds = decoSpriteIds;
 
-      if (players[player.id]) {
-        player = players[player.id];
+      if (game.players[game.player.id]) {
+        game.player = game.players[game.player.id];
       }
     }
   );
 
-  socket.on("leaderboardUpdate", (sortedTop10) => {
+  game.socket.on("leaderboardUpdate", (sortedTop10) => {
     let strToDisplay = "";
     for (let i = 0; i < sortedTop10.length; i++) {
       strToDisplay += `<tr class="row"><td class="col-2">${
@@ -139,8 +98,8 @@ function setup() {
     $("#leaderboard").html(strToDisplay);
   });
 
-  socket.on("died", (newPlayer) => {
-    player = newPlayer
+  game.socket.on("died", (playerId) => {
+    // game.player = newPlayer
     $("#game_elements").css("display", "none");
     $("#settings_elements").css("display", "inline");
     $("#died_screen").css("display", "inline");
@@ -148,64 +107,57 @@ function setup() {
       "jumbotron d-flex align-items-center vertical-center"
     );
     $("#deathText").css("display", "block");
+
+    game.onDeathCallback();
   });
 }
 
-function startGame(e) {
-  $("#settings_elements").css("display", "none");
-  $("#game_elements").css("display", "inline");
-  $("#site_wrapper").removeClass(
-    "jumbotron d-flex align-items-center vertical-center"
-  );
-  $("#deathText").css("display", "none");
-
-  player.name = $("#username").val();
-  player.dead = false;
-  socket.emit("join", player);
-}
-
-function loop() {
+let oldTimestamp = 0;
+function loop(timestamp) {
   ctx.fillStyle = "#fff";
   ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
 
   ctx.save();
   ctx.translate(canvas.width / 2, canvas.height / 2);
-  ctx.scale(renderScale, renderScale);
-  ctx.translate(-player.x, -player.y);
+  ctx.scale(game.renderScale, game.renderScale);
+  ctx.translate(-game.player.x, -game.player.y);
 
   // draw map
-  if (map.htmlImage) {
+  if (game.map.htmlImage) {
     ctx.drawImage(
-      map.htmlImage,
-      -map.width / 2,
-      -map.height / 2,
-      map.width,
-      map.height
+      game.map.htmlImage,
+      -game.map.width / 2,
+      -game.map.height / 2,
+      game.map.width,
+      game.map.height
     );
   }
 
-  // bullets
-  for (const id in bullets) {
-    drawBullet(bullets[id]);
+  // draw bullets
+  for (const [id, bullet] of Object.entries(game.bullets)) {
+    drawBullet(bullet);
   }
 
-  // players
-  drawPlayer(player);
-  for (const id in players) {
-    if (player.id != id) {
-      drawPlayer(players[id]);
+  // draw players
+  drawPlayer(game.player);
+  for (const [id, player] of Object.entries(game.players)) {
+    if (game.player.id != id) {
+      drawPlayer(player);
     }
   }
 
-  // deco sprites
-  for (const id of visibleDecoSpriteIds) {
-    if (decoSprites[id]) {
-      const ds = decoSprites[id];
-      drawDecoSprite(ds);
+  // only draw visible deco sprites
+  if (game.visibleDecoSpriteIds) {
+    for (const id of game.visibleDecoSpriteIds) {
+      const ds = game.map.decoSprites[id];
+      if (ds) {
+        drawDecoSprite(ds);
+      }
     }
   }
 
-  for (const obs of obstacles) {
+  // draw obstacles for debug purposes
+  for (const obs of game.obstacles) {
     ctx.save();
     ctx.strokeStyle = "#000";
     for (let i = 0; i < obs.coords.length - 1; i++) {
@@ -240,39 +192,9 @@ function loop() {
   ctx.restore();
 
   // game logic /////////////////////////////////////////////
-
-  lastTime = curTime;
-  curTime = Date.now();
-  const deltaTime = (curTime - lastTime) / 10;
-
-  let moveX = 0;
-  let moveY = 0;
-
-  if (keyboard["w"]) {
-    moveY = -1;
-  }
-  if (keyboard["s"]) {
-    moveY = 1;
-  }
-  if (keyboard["a"]) {
-    moveX = -1;
-  }
-  if (keyboard["d"]) {
-    moveX = 1;
-  }
-
-  if (moveX != 0 || moveY != 0) {
-    player.movementAngle = Math.atan2(moveY, moveX);
-    socket.emit("playerMove", player);
-  }
-
-  if(mouse.leftDown || mouse.rightDown) {
-    socket.emit("shoot", player);
-  }
-
-  player.screenWidth = window.innerWidth; //adjust render distance to window
-  player.screenHeight = window.innerHeight;
-
+  const elapsedTime = timestamp - oldTimestamp;
+  game.onLoopCallback(elapsedTime); // callback
+  oldTimestamp = timestamp;
   window.requestAnimationFrame(loop);
 }
 
@@ -310,13 +232,33 @@ function drawPlayer(player) {
   );
 
   // healthbar
-  const width = 100;
-  const height = 10;
-  ctx.fillStyle = "#0f0";
-  ctx.fillRect(-width / 2, -radius * 3, (width * player.hp) / 100, height);
-  ctx.strokeStyle = "#000";
-  ctx.strokeRect(-width / 2, -radius * 3, width, height);
+  const width = 50;
+  const height = 8;
+  const healthWidth = (width * player.hp) / 100;
+  const rad = height / 2;
+  const verticalOffset = -radius * 2;
+  ctx.beginPath();
+  ctx.fillStyle = "#444";
+  ctx.arc(-width / 2, verticalOffset + rad, rad, 0, Math.PI * 2, false);
+  ctx.arc(+width / 2, verticalOffset + rad, rad, 0, Math.PI * 2, false);
+  ctx.rect(-width / 2, verticalOffset, width, height);
+  ctx.fill();
 
+  ctx.beginPath();
+  ctx.fillStyle = "#3d0";
+  ctx.arc(-width / 2, verticalOffset + rad, rad - 2, 0, Math.PI * 2, false);
+  ctx.arc(
+    healthWidth - width / 2,
+    verticalOffset + rad,
+    rad - 2,
+    0,
+    Math.PI * 2,
+    false
+  );
+  ctx.rect(-width / 2, verticalOffset + 2, healthWidth, height - 4);
+  ctx.fill();
+
+  // velocity
   ctx.strokeStyle = "#f00";
   ctx.lineWidth = 2;
   ctx.beginPath();
@@ -328,13 +270,7 @@ function drawPlayer(player) {
 }
 
 function drawBullet(bullet) {
-  // const bp = players[bullet.playerId];
-  // if (!bp) return;
-
   ctx.save();
-  // const offX = (bp.radius * 1.5 + bullet.radius) * Math.cos(bp.angle);
-  // const offY = (bp.radius * 1.5 + bullet.radius) * Math.sin(bp.angle);
-  // ctx.translate(bullet.x + offX, bullet.y + offY);
   ctx.translate(bullet.x, bullet.y);
 
   const radius = bullet.radius;
@@ -370,40 +306,69 @@ function drawDecoSprite(ds) {
   ctx.restore();
 }
 
-function mousedown(e) {
-  mouse.x = e.pageX - canvas.offsetLeft;
-  mouse.y = e.pageY - canvas.offsetTop;
-  mouse.leftDown = (e.buttons & 1) == 1;
-  mouse.rightDown = (e.buttons & 2) == 2;
+function startClick(e) {
+  $("#settings_elements").css("display", "none");
+  $("#game_elements").css("display", "inline");
+  $("#site_wrapper").removeClass(
+    "jumbotron d-flex align-items-center vertical-center"
+  );
+  $("#deathText").css("display", "none");
 
-  socket.emit("shoot", player);
+  game.player.name = $("#inputUsername").val();
+  game.socket.emit("join", game.player);
+}
+
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  canvas.style.width = window.innerWidth + "px";
+  canvas.style.height = window.innerHieght + "px";
+  game.windowWidth = window.innerWidth;
+  game.windowHeight = window.innerHeight;
+  if (
+    window.innerWidth >
+    window.innerHeight * (game.minWidth / game.minHeight)
+  ) {
+    game.renderScale = Math.max(0.7, window.innerHeight / game.minHeight);
+  } else {
+    game.renderScale = Math.max(0.7, window.innerWidth / game.minWidth);
+  }
+  //adjust render distance to window
+  game.player.visibleGameWidth = game.windowWidth * (1 / game.renderScale);
+  game.player.visibleGameHeight = game.windowHeight * (1 / game.renderScale);
+  if (game.socket.id) {
+    game.socket.emit("playerScreenResize", game.player);
+  }
+}
+
+function mousedown(e) {
+  game.mouse.x = e.pageX - canvas.offsetLeft;
+  game.mouse.y = e.pageY - canvas.offsetTop;
+  game.mouse.leftDown = (e.buttons & 1) == 1;
+  game.mouse.rightDown = (e.buttons & 2) == 2;
 }
 
 function mouseup(e) {
-  mouse.x = e.pageX - canvas.offsetLeft;
-  mouse.y = e.pageY - canvas.offsetTop;
-  mouse.leftDown = (e.buttons & 1) == 1;
-  mouse.rightDown = (e.buttons & 2) == 2;
+  game.mouse.x = e.pageX - canvas.offsetLeft;
+  game.mouse.y = e.pageY - canvas.offsetTop;
+  game.mouse.leftDown = (e.buttons & 1) == 1;
+  game.mouse.rightDown = (e.buttons & 2) == 2;
 }
 
 function mouseleave(e) {
-  mouse.x = e.pageX - canvas.offsetLeft;
-  mouse.y = e.pageY - canvas.offsetTop;
-  mouse.leftDown = false;
-  mouse.rightDown = false;
+  game.mouse.x = e.pageX - canvas.offsetLeft;
+  game.mouse.y = e.pageY - canvas.offsetTop;
+  game.mouse.leftDown = false;
+  game.mouse.rightDown = false;
 }
 
 function mousemove(e) {
-  mouse.x = e.pageX - canvas.offsetLeft;
-  mouse.y = e.pageY - canvas.offsetTop;
-  mouse.leftDown = (e.buttons & 1) == 1;
-  mouse.rightDown = (e.buttons & 2) == 2;
-  const dx = mouse.x - canvas.width / 2;
-  const dy = mouse.y - canvas.height / 2;
-  mouse.angle = Math.atan2(dy, dx);
-
-  player.turretAngle = mouse.angle;
-  socket.emit("mouseMove", player);
+  game.mouse.oldX = game.mouse.x;
+  game.mouse.oldY = game.mouse.y;
+  game.mouse.x = e.pageX - canvas.offsetLeft;
+  game.mouse.y = e.pageY - canvas.offsetTop;
+  game.mouse.leftDown = (e.buttons & 1) == 1;
+  game.mouse.rightDown = (e.buttons & 2) == 2;
 }
 
 function wheel(e) {
@@ -424,16 +389,15 @@ function wheel(e) {
 }
 
 function keydown(e) {
-  keyboard[e.key.toLowerCase()] = true;
-  //console.log("down", e.key.toLowerCase());
+  game.keyboard[e.key.toLowerCase()] = true;
+  // console.log("down", e.key.toLowerCase());
 }
 
 function keyup(e) {
-  keyboard[e.key.toLowerCase()] = false;
+  game.keyboard[e.key.toLowerCase()] = false;
   //console.log("up", e.key.toLowerCase());
 }
 
 function dist(x1, y1, x2, y2) {
   return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
 }
-

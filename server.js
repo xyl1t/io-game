@@ -16,7 +16,18 @@ const app = express();
 import http from "http";
 const server = http.createServer(app);
 import { Server } from "socket.io";
-const io = new Server(server);
+import { instrument } from "@socket.io/admin-ui";
+
+const io = new Server(server, {
+  cors: {
+    origin: ["https://admin.socket.io"],
+    credentials: true
+  }
+});
+instrument(io, {
+  auth: false,
+  mode: "development",
+});
 
 import {
   randBetween,
@@ -45,8 +56,7 @@ const map = {
   height: 5000,
 };
 
-const millisBetweenShots = 100;
-const timesOfLastShots = {};
+const millisBetweenShots = 150;
 let leaderboardInfos = [];
 
 function generateDecoSprites(count) {
@@ -89,40 +99,98 @@ class Player {
     this.accY = 0;
     this.velX = 0;
     this.velY = 0;
-    this.x = 0;
-    this.y = 0;
+    this.x = randBetween(-300, 300);
+    this.y = randBetween(-300, 300);
     this.turretAngle = 0;
     this.movementAngle = 0;
     this.color = getRandomColor();
     this.specialColor = undefined;
     this.radius = 16;
+    this.lastShotTime = 0;
     this.dead = isDead || false;
-    this.screenWidth = socket.handshake.query.screenWidth;
-    this.screenHeight = socket.handshake.query.screenHeight;
+    this.visibleGameWidth = 0;
+    this.visibleGameHeight = 0;
   }
 }
 
 obstacles.push(
-  new Obstacle("line", 8, [
+  new Obstacle("line", 16, [
+    { x: -1575, y: -368 },
+    { x: -1456, y: -329 },
+    { x: -1359, y: -253 },
+    { x: -1299, y: -170 },
+    { x: -1273, y: -87 },
+    { x: -1263, y: -4 },
+    { x: -1240, y: 15 },
+    { x: -1200, y: -16 },
+    { x: -1140, y: -56 },
+    { x: -1080, y: -87 },
+    { x: -1009, y: -104 },
+    { x: -953, y: -103 },
+    { x: -894, y: -96 },
+    { x: -857, y: -89 },
+    { x: -833, y: -107 },
+    { x: -786, y: -182 },
+    { x: -722, y: -247 },
+    { x: -681, y: -287 },
+    { x: -640, y: -386 },
+    { x: -636, y: -439 },
+    { x: -673, y: -559 },
+    { x: -682, y: -635 },
+    { x: -678, y: -719 },
+    { x: -651, y: -837 },
+    { x: -651, y: -928 },
+    { x: -661, y: -1008 },
+    { x: -660, y: -1107 },
+    { x: -707, y: -1176 },
+    { x: -751, y: -1237 },
+    { x: -818, y: -1272 },
+    { x: -818, y: -1273 },
+    { x: -871, y: -1297 },
+    { x: -922, y: -1349 },
+    { x: -983, y: -1357 },
+    { x: -1064, y: -1328 },
+    { x: -1134, y: -1293 },
+    { x: -1202, y: -1220 },
+    { x: -1241, y: -1134 },
+    { x: -1253, y: -1058 },
+    { x: -1266, y: -980 },
+    { x: -1310, y: -945 },
+    { x: -1380, y: -904 },
+    { x: -1427, y: -859 },
+    { x: -1459, y: -810 },
+    { x: -1484, y: -747 },
+    { x: -1507, y: -687 },
+    { x: -1561, y: -615 },
+    { x: -1589, y: -557 },
+    { x: -1601, y: -479 },
+    { x: -1595, y: -427 },
+    { x: -1593, y: -398 },
+    { x: -1575, y: -368 },
+  ])
+);
+
+obstacles.push(
+  new Obstacle("line", 4, [
     { x: 0, y: 100 },
     { x: 0, y: 200 },
     { x: -100, y: 300 },
   ])
 );
 obstacles.push(
-  new Obstacle("line", 8, [
+  new Obstacle("line", 4, [
     { x: 100, y: 100 },
     { x: 300, y: 100 },
   ])
 );
 obstacles.push(
-  new Obstacle("line", 8, [
+  new Obstacle("line", 4, [
     { x: -100, y: -100 },
     { x: -283, y: -182 },
   ])
 );
 obstacles.push(
-  new Obstacle("line", 8, [
+  new Obstacle("line", 4, [
     { x: -150, y: -100 },
     { x: -383, y: -142 },
   ])
@@ -132,36 +200,33 @@ io.on("connection", (socket) => {
   const token = socket.handshake.auth.token;
   if (token != "actualUser") socket.disconnect(true);
 
-  // obstacles.push(
-  //   new Obstacle("line", 8, [
-  //     { x: randBetween(-500, 500), y: randBetween(-500, 500) },
-  //     { x: randBetween(-500, 500), y: randBetween(-500, 500) },
-  //   ])
-  // );
-
-  let newPlayer = new Player(socket);
-  sockets[newPlayer.id] = socket;
+  sockets[socket.id] = socket;
   console.log("a new player connected", players);
-  socket.emit("welcome", newPlayer, map, decoSprites, obstacles);
+  socket.emit("welcome", socket.id, map, decoSprites, obstacles);
 
   socket.on("disconnect", () => {
     leaderboardInfos = leaderboardInfos.filter(
       (score) => score.id != socket.id
     );
-    delete timesOfLastShots[socket.id];
     delete players[socket.id];
     delete sockets[socket.id];
     console.log("a player disconnected", players);
   });
 
   socket.on("join", (player) => {
-    players[player.id] = player;
-    timesOfLastShots[player.id] = 0;
+    let newPlayer = new Player(socket);
+    newPlayer.name = player.name;
+    newPlayer.visibleGameWidth = player.visibleGameWidth;
+    newPlayer.visibleGameHeight = player.visibleGameHeight;
+    console.log(" new player joined", newPlayer);
+
+    players[newPlayer.id] = newPlayer;
+    players[newPlayer.id].lastShotTime = 0;
     leaderboardInfos = leaderboardInfos.filter(
-      (score) => score.id != player.id
+      (score) => score.id != newPlayer.id
     );
-    leaderboardInfos.push({ id: player.id, name: player.name, score: 0 });
-    socket.broadcast.emit("playerJoin", player); // not yet handled in client
+    leaderboardInfos.push({ id: newPlayer.id, name: newPlayer.name, score: 0 });
+    io.emit("playerJoin", newPlayer); // not yet handled in client
   });
 
   socket.on("mouseMove", (player) => {
@@ -177,22 +242,29 @@ io.on("connection", (socket) => {
     }
   });
 
+  socket.on("playerScreenResize", (player) => {
+    if (players[player.id]) {
+      players[player.id].visibleGameWidth = player.visibleGameWidth;
+      players[player.id].visibleGameHeight = player.visibleGameHeight;
+    }
+  });
+
   socket.on("shoot", (player) => {
-    if (Date.now() - timesOfLastShots[player.id] > millisBetweenShots) {
+    if (Date.now() - players[player.id].lastShotTime > millisBetweenShots) {
       const bulletId = genId();
       bullets[bulletId] = {
         id: bulletId,
         playerId: player.id,
         angle: player.turretAngle,
         speed: 100,
-        x: player.x + (player.radius*1.8 + 6) * Math.cos(player.turretAngle),
-        y: player.y + (player.radius*1.8 + 6) * Math.sin(player.turretAngle),
+        x: player.x + (player.radius * 1.8 + 6) * Math.cos(player.turretAngle),
+        y: player.y + (player.radius * 1.8 + 6) * Math.sin(player.turretAngle),
         radius: 6,
         color: player.color,
         range: 3000, // pixels
         damage: 10, // hp
       };
-      timesOfLastShots[player.id] = Date.now();
+      players[player.id].lastShotTime = Date.now();
     }
   });
 });
@@ -207,12 +279,12 @@ function serverUpdate() {
   for (let iSim = 0; iSim < simulationUpdates; iSim++) {
     for (const pId in players) {
       const p = players[pId];
-      p.velX *= 0.96;
-      p.velY *= 0.96;
       p.velX += p.accX * simDeltaTime;
       p.velY += p.accY * simDeltaTime;
       p.x += p.velX * simDeltaTime;
       p.y += p.velY * simDeltaTime;
+      p.velX *= 0.96;
+      p.velY *= 0.96;
       p.accX = 0;
       p.accY = 0;
     }
@@ -226,6 +298,8 @@ function serverUpdate() {
 
         for (const pId in players) {
           const p = players[pId];
+          if (p.dead) continue;
+
           const distX = p.x - b.x;
           const distY = p.y - b.y;
           const distance = Math.sqrt(distX * distX + distY * distY);
@@ -330,10 +404,11 @@ function serverUpdate() {
 }
 
 function playerDied(playerId) {
-  let newPlayer = new Player(sockets[playerId], true);
-  leaderboardInfos = leaderboardInfos.filter((player) => player.id != playerId);
-  players[playerId] = newPlayer;
-  sockets[playerId].emit("died", newPlayer);
+  // let newPlayer = new Player(sockets[playerId], true);
+  // leaderboardInfos = leaderboardInfos.filter((player) => player.id != playerId);
+  // players[playerId] = newPlayer;
+  players[playerId].dead = true;
+  sockets[playerId].emit("died", playerId);
 }
 
 setInterval(serverUpdate, updateTime);
@@ -365,30 +440,31 @@ server.listen(PORT, () => {
 });
 
 function getVisiblePlayers(ownPlayer) {
-  return players;
+  // return players;
   let visiblePlayers = {};
 
   if (ownPlayer) {
     let ownX = ownPlayer.x;
     let ownY = ownPlayer.y;
-    let screenWidth = ownPlayer.screenWidth;
-    let screenHeight = ownPlayer.screenHeight;
+    let screenWidth = ownPlayer.visibleGameWidth;
+    let screenHeight = ownPlayer.visibleGameHeight;
 
     for (let player in players) {
       let otherPlayer = players[player];
       if (!otherPlayer.dead) {
         if (
-          otherPlayer.x >= ownX - screenWidth / 2 &&
-          otherPlayer.x <= ownX + screenWidth / 2
+          otherPlayer.x + otherPlayer.radius >= ownX - screenWidth / 2 &&
+          otherPlayer.x - otherPlayer.radius <= ownX + screenWidth / 2
         ) {
           //x-check
           if (
-            otherPlayer.y >= ownY - screenHeight / 2 &&
-            otherPlayer.y <= ownY + screenHeight / 2
-          )
+            otherPlayer.y + otherPlayer.radius >= ownY - screenHeight / 2 &&
+            otherPlayer.y - otherPlayer.radius <= ownY + screenHeight / 2
+          ) {
             //y-check
             visiblePlayers[otherPlayer.id] = otherPlayer;
-        } //add radius
+          }
+        }
       }
     }
   }
@@ -396,25 +472,25 @@ function getVisiblePlayers(ownPlayer) {
 }
 
 function getVisibleBullets(ownPlayer) {
-  return bullets;
+  // return bullets;
   let visibleBullets = {};
 
   if (ownPlayer) {
     let ownX = ownPlayer.x;
     let ownY = ownPlayer.y;
-    let screenWidth = ownPlayer.screenWidth;
-    let screenHeight = ownPlayer.screenHeight;
+    let screenWidth = ownPlayer.visibleGameWidth;
+    let screenHeight = ownPlayer.visibleGameHeight;
 
     for (let bullet in bullets) {
       let bulletToCheck = bullets[bullet];
       if (
-        bulletToCheck.x >= ownX - screenWidth / 2 &&
-        bulletToCheck.x <= ownX + screenWidth / 2
+        bulletToCheck.x + bulletToCheck.radius >= ownX - screenWidth / 2 &&
+        bulletToCheck.x - bulletToCheck.radius <= ownX + screenWidth / 2
       ) {
         //x-check
         if (
-          bulletToCheck.y >= ownY - screenHeight / 2 &&
-          bulletToCheck.y <= ownY + screenHeight / 2
+          bulletToCheck.y + bulletToCheck.radius >= ownY - screenHeight / 2 &&
+          bulletToCheck.y - bulletToCheck.radius <= ownY + screenHeight / 2
         )
           //y-check
           visibleBullets[bulletToCheck.id] = bulletToCheck;
@@ -427,14 +503,14 @@ function getVisibleBullets(ownPlayer) {
 
 function calculateVisibleDecoSprites(ownPlayer) {
   // console.log(Object.keys(decoSprites));
-  return Object.keys(decoSprites);
+  // return Object.keys(decoSprites);
   let visibleDecoSpriteIds = [];
 
   if (ownPlayer) {
     let ownX = ownPlayer.x;
     let ownY = ownPlayer.y;
-    let screenWidth = ownPlayer.screenWidth;
-    let screenHeight = ownPlayer.screenHeight;
+    let screenWidth = ownPlayer.visibleGameWidth;
+    let screenHeight = ownPlayer.visibleGameHeight;
 
     for (let decoSprite in decoSprites) {
       let dsToCheck = decoSprites[decoSprite];

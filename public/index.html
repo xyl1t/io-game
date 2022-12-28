@@ -14,8 +14,8 @@
 
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
-    <script src="./index.js"></script>
-    <script src="./client.js"></script>
+    <script type="module" src="./client.js"></script>
+    <script type="module" src="./index.js"></script>
 </head>
 <body>
     <div id="site_wrapper" class="jumbotron d-flex align-items-center vertical-center">
@@ -23,8 +23,8 @@
             <div id="input_container">
                 <h1 id="game_name">Sasma.io</h1>
                 <p id="deathText" style="display:none">You died</p>
-                <input id="username" type="text" class="form-control" placeholder="Username" aria-label="Username" aria-describedby="basic-addon1" value="anon" autofocus>
-                <button id="start_game" type="button" class="btn btn-primary">Start Game</button>
+                <input id="inputUsername" type="text" class="form-control" placeholder="Username" aria-label="Username" aria-describedby="basic-addon1" value="anon" autofocus disabled>
+                <input id="btnStartGame" type="button" class="btn btn-primary" value="Start Game" disabled>
             </div>
         </div>
         <div id="game_elements">
@@ -40,7 +40,7 @@
                     </tbody>
                   </table>
             </div>
-            <canvas id="canvas" oncontextmenu="return false;" style="width:5000;"></canvas>
+            <canvas id="canvas" oncontextmenu="return false;" width="800" height="600"></canvas>
         </div>
     </div>
 </body>
