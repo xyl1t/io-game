@@ -23,14 +23,14 @@ import { randBetween, dist, genId, getRandomColor } from "./lib/util.js";
 import {
   Player,
   players,
-  addPlayer,
+  setPlayer,
   removePlayer,
   getVisiblePlayers,
 } from "./lib/players.js";
 import {
   Bullet,
   bullets,
-  addBullet,
+  setBullet,
   removeBullet,
   getVisibleBullets,
 } from "./lib/bullets.js";
@@ -69,10 +69,10 @@ let lastTime = Date.now();
 let curTime = Date.now();
 let deltaTime = 0;
 
+// TODO: maybe the socket IS the player?
 const sockets = {};
 
 const millisBetweenShots = 150;
-let leaderboardInfos = [];
 
 generateDecoSprites(32);
 
@@ -85,24 +85,23 @@ io.on("connection", (socket) => {
   socket.emit("welcome", socket.id, map, sprites, obstacles);
 
   socket.on("disconnect", () => {
-    leaderboardInfos = leaderboardInfos.filter(
-      (score) => score.id != socket.id
-    );
     removePlayer(socket.id);
     delete sockets[socket.id];
     console.log("[io:disconnect]", players);
   });
 
-  socket.on("join", (player) => {
-    const newPlayer = new Player(
+  // NOTE: called when a player joins the game, this could also be a respawn!
+  socket.on("join", (playerInfo) => {
+    const player = new Player(
       socket,
-      player.name,
-      player.visibleGameWidth,
-      player.visibleGameHeight
+      playerInfo.name,
+      playerInfo.visibleGameWidth,
+      playerInfo.visibleGameHeight
     );
-    addPlayer(newPlayer);
-    io.emit("playerJoin", newPlayer);
-    console.log("[io:playerJoin]", newPlayer);
+    player.alive = true;
+    setPlayer(player);
+    io.emit("playerJoin", player);
+    console.log("[io:join]", player);
   });
 
   socket.on("mouseMove", (player) => {
@@ -127,10 +126,10 @@ io.on("connection", (socket) => {
 
   socket.on("shoot", (player) => {
     if (
-      !players[player.id]?.dead &&
+      players[player.id]?.alive &&
       Date.now() - players[player.id].lastShotTime > millisBetweenShots
     ) {
-      addBullet(new Bullet(player));
+      setBullet(new Bullet(player));
       players[player.id].lastShotTime = Date.now();
     }
   });
@@ -162,7 +161,7 @@ function serverUpdate() {
         b.y += b.speed * simDeltaTime * Math.sin(b.angle);
 
         for (const p of Object.values(players)) {
-          if (p.dead) continue;
+          if (!p.alive) continue;
 
           const distX = p.x - b.x;
           const distY = p.y - b.y;
@@ -177,9 +176,10 @@ function serverUpdate() {
 
             removeBullet(b);
           }
-
+          // player died
           if (p.hp <= 0) {
-            playerDied(p.id);
+            p.alive = false;
+            sockets[p.id].emit("died", p.id);
           }
         }
       } else {
@@ -264,32 +264,6 @@ function serverUpdate() {
 }
 
 function playerDied(playerId) {
-  // let newPlayer = new Player(sockets[playerId], true);
-  // leaderboardInfos = leaderboardInfos.filter((player) => player.id != playerId);
-  // players[playerId] = newPlayer;
-  players[playerId].dead = true;
-  sockets[playerId].emit("died", playerId);
 }
 
 setInterval(serverUpdate, tps);
-setInterval(updateLeaderboard, 1000);
-
-function updateLeaderboard() {
-  let sortedTop10 = getTopScores(10);
-
-  for (let socket in sockets) {
-    sockets[socket].emit("leaderboardUpdate", sortedTop10);
-  }
-}
-
-function getTopScores(n) {
-  let arr = leaderboardInfos;
-  if (n > arr.length) {
-    n = arr.length;
-  }
-  return arr
-    .sort(function (a, b) {
-      return b.score - a.score;
-    })
-    .slice(0, n); //Exception arr.sort(...) is not a function
-}

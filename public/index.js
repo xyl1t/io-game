@@ -321,7 +321,12 @@ function startClick(e) {
   $("#deathText").css("display", "none");
 
   game.player.name = $("#inputUsername").val();
-  game.socket.emit("join", game.player);
+
+  game.socket.emit("join", {
+    name: game.player.name,
+    visibleGameWidth: game.player.visibleGameWidth,
+    visibleGameHeight: game.player.visibleGameHeight,
+  });
 }
 
 function resize() {
