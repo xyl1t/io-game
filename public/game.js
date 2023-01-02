@@ -24,8 +24,8 @@ export const game = {
 
 
   // client data
-  windowWidth: 0,
-  windowHeight: 0,
+  windowWidth: -1, // window width and height have to be set when client is loaded
+  windowHeight: -1,
   renderScale: 1,
   minWidth: 1200,
   minHeight: 1200 * (9 / 16), // 16:9 aspect ratio
