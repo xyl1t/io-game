@@ -13,220 +13,96 @@ const argv = yargs(hideBin(process.argv)).argv;
 
 import express from "express";
 const app = express();
-import http from "http";
-const server = http.createServer(app);
+const PORT = argv.port ?? 8080;
+
+import { createServer } from "http";
 import { Server } from "socket.io";
 import { instrument } from "@socket.io/admin-ui";
 
+import { randBetween, dist, genId, getRandomColor } from "./lib/util.js";
+import {
+  Player,
+  players,
+  addPlayer,
+  removePlayer,
+  getVisiblePlayers,
+} from "./lib/players.js";
+import {
+  Bullet,
+  bullets,
+  addBullet,
+  removeBullet,
+  getVisibleBullets,
+} from "./lib/bullets.js";
+import {
+  Sprite,
+  sprites,
+  generateDecoSprites,
+  calculateVisibleDecoSprites,
+} from "./lib/sprites.js";
+import { Obstacle, obstacles } from "./lib/obstacles.js";
+import { map } from "./lib/maps.js";
+
+const server = createServer(app);
 const io = new Server(server, {
   cors: {
     origin: ["https://admin.socket.io"],
-    credentials: true
-  }
+    credentials: true,
+  },
 });
 instrument(io, {
   auth: false,
   mode: "development",
 });
 
-import {
-  randBetween,
-  dist,
-  genId,
-  getRandomColor,
-} from "./helpers/helperFunctions.js";
-
 app.use(express.static("public"));
 
-const updateTime = 1000 / 60;
-const simulationUpdates = 4;
+console.log("[server] starting server");
+server.listen(PORT, () => {
+  console.log(`[server] listening on *:${PORT}`);
+});
+
+const tps = 1000 / 60; // ticks per second
+const simulationUpdates = 4; // number of physics engine updates in one tick
+
 let lastTime = Date.now();
 let curTime = Date.now();
 let deltaTime = 0;
 
 const sockets = {};
 
-const players = {};
-const bullets = {};
-const decoSprites = {};
-const obstacles = [];
-const map = {
-  name: "map",
-  width: 5000,
-  height: 5000,
-};
-
 const millisBetweenShots = 150;
 let leaderboardInfos = [];
 
-function generateDecoSprites(count) {
-  for (let i = 0; i < count; i++) {
-    const id = genId();
-    const maxX = map.width / 2;
-    const minX = -map.width / 2;
-    const maxY = map.height / 2;
-    const minY = -map.height / 2;
-    decoSprites[id] = {
-      id: id,
-      type: "bush",
-      x: randBetween(minX, maxX),
-      y: randBetween(minY, maxY),
-      sizeX: 180,
-      sizeY: 180,
-      solid: false,
-    };
-  }
-}
-
 generateDecoSprites(32);
-
-class Obstacle {
-  constructor(type, radius, coords) {
-    this.id = genId();
-    this.type = type;
-    this.radius = radius;
-    this.coords = coords;
-  }
-}
-
-class Player {
-  constructor(socket, isDead) {
-    this.id = socket.id;
-    this.name = "";
-    this.hp = 100;
-    this.speed = 150;
-    this.accX = 0;
-    this.accY = 0;
-    this.velX = 0;
-    this.velY = 0;
-    this.x = randBetween(-300, 300);
-    this.y = randBetween(-300, 300);
-    this.turretAngle = 0;
-    this.movementAngle = 0;
-    this.color = getRandomColor();
-    this.specialColor = undefined;
-    this.radius = 16;
-    this.lastShotTime = 0;
-    this.dead = isDead || false;
-    this.visibleGameWidth = 0;
-    this.visibleGameHeight = 0;
-  }
-}
-
-obstacles.push(
-  new Obstacle("line", 16, [
-    { x: -1575, y: -368 },
-    { x: -1456, y: -329 },
-    { x: -1359, y: -253 },
-    { x: -1299, y: -170 },
-    { x: -1273, y: -87 },
-    { x: -1263, y: -4 },
-    { x: -1240, y: 15 },
-    { x: -1200, y: -16 },
-    { x: -1140, y: -56 },
-    { x: -1080, y: -87 },
-    { x: -1009, y: -104 },
-    { x: -953, y: -103 },
-    { x: -894, y: -96 },
-    { x: -857, y: -89 },
-    { x: -833, y: -107 },
-    { x: -786, y: -182 },
-    { x: -722, y: -247 },
-    { x: -681, y: -287 },
-    { x: -640, y: -386 },
-    { x: -636, y: -439 },
-    { x: -673, y: -559 },
-    { x: -682, y: -635 },
-    { x: -678, y: -719 },
-    { x: -651, y: -837 },
-    { x: -651, y: -928 },
-    { x: -661, y: -1008 },
-    { x: -660, y: -1107 },
-    { x: -707, y: -1176 },
-    { x: -751, y: -1237 },
-    { x: -818, y: -1272 },
-    { x: -818, y: -1273 },
-    { x: -871, y: -1297 },
-    { x: -922, y: -1349 },
-    { x: -983, y: -1357 },
-    { x: -1064, y: -1328 },
-    { x: -1134, y: -1293 },
-    { x: -1202, y: -1220 },
-    { x: -1241, y: -1134 },
-    { x: -1253, y: -1058 },
-    { x: -1266, y: -980 },
-    { x: -1310, y: -945 },
-    { x: -1380, y: -904 },
-    { x: -1427, y: -859 },
-    { x: -1459, y: -810 },
-    { x: -1484, y: -747 },
-    { x: -1507, y: -687 },
-    { x: -1561, y: -615 },
-    { x: -1589, y: -557 },
-    { x: -1601, y: -479 },
-    { x: -1595, y: -427 },
-    { x: -1593, y: -398 },
-    { x: -1575, y: -368 },
-  ])
-);
-
-obstacles.push(
-  new Obstacle("line", 4, [
-    { x: 0, y: 100 },
-    { x: 0, y: 200 },
-    { x: -100, y: 300 },
-  ])
-);
-obstacles.push(
-  new Obstacle("line", 4, [
-    { x: 100, y: 100 },
-    { x: 300, y: 100 },
-  ])
-);
-obstacles.push(
-  new Obstacle("line", 4, [
-    { x: -100, y: -100 },
-    { x: -283, y: -182 },
-  ])
-);
-obstacles.push(
-  new Obstacle("line", 4, [
-    { x: -150, y: -100 },
-    { x: -383, y: -142 },
-  ])
-);
 
 io.on("connection", (socket) => {
   const token = socket.handshake.auth.token;
   if (token != "actualUser") socket.disconnect(true);
 
   sockets[socket.id] = socket;
-  console.log("a new player connected", players);
-  socket.emit("welcome", socket.id, map, decoSprites, obstacles);
+  console.log("[io:connection]", players);
+  socket.emit("welcome", socket.id, map, sprites, obstacles);
 
   socket.on("disconnect", () => {
     leaderboardInfos = leaderboardInfos.filter(
       (score) => score.id != socket.id
     );
-    delete players[socket.id];
+    removePlayer(socket.id);
     delete sockets[socket.id];
-    console.log("a player disconnected", players);
+    console.log("[io:disconnect]", players);
   });
 
   socket.on("join", (player) => {
-    let newPlayer = new Player(socket);
-    newPlayer.name = player.name;
-    newPlayer.visibleGameWidth = player.visibleGameWidth;
-    newPlayer.visibleGameHeight = player.visibleGameHeight;
-    console.log(" new player joined", newPlayer);
-
-    players[newPlayer.id] = newPlayer;
-    players[newPlayer.id].lastShotTime = 0;
-    leaderboardInfos = leaderboardInfos.filter(
-      (score) => score.id != newPlayer.id
+    const newPlayer = new Player(
+      socket,
+      player.name,
+      player.visibleGameWidth,
+      player.visibleGameHeight
     );
-    leaderboardInfos.push({ id: newPlayer.id, name: newPlayer.name, score: 0 });
-    io.emit("playerJoin", newPlayer); // not yet handled in client
+    addPlayer(newPlayer);
+    io.emit("playerJoin", newPlayer);
+    console.log("[io:playerJoin]", newPlayer);
   });
 
   socket.on("mouseMove", (player) => {
@@ -250,20 +126,11 @@ io.on("connection", (socket) => {
   });
 
   socket.on("shoot", (player) => {
-    if (Date.now() - players[player.id].lastShotTime > millisBetweenShots) {
-      const bulletId = genId();
-      bullets[bulletId] = {
-        id: bulletId,
-        playerId: player.id,
-        angle: player.turretAngle,
-        speed: 100,
-        x: player.x + (player.radius * 1.8 + 6) * Math.cos(player.turretAngle),
-        y: player.y + (player.radius * 1.8 + 6) * Math.sin(player.turretAngle),
-        radius: 6,
-        color: player.color,
-        range: 3000, // pixels
-        damage: 10, // hp
-      };
+    if (
+      !players[player.id]?.dead &&
+      Date.now() - players[player.id].lastShotTime > millisBetweenShots
+    ) {
+      addBullet(new Bullet(player));
       players[player.id].lastShotTime = Date.now();
     }
   });
@@ -277,8 +144,7 @@ function serverUpdate() {
   let simDeltaTime = deltaTime / simulationUpdates;
 
   for (let iSim = 0; iSim < simulationUpdates; iSim++) {
-    for (const pId in players) {
-      const p = players[pId];
+    for (const p of Object.values(players)) {
       p.velX += p.accX * simDeltaTime;
       p.velY += p.accY * simDeltaTime;
       p.x += p.velX * simDeltaTime;
@@ -289,37 +155,35 @@ function serverUpdate() {
       p.accY = 0;
     }
 
-    for (const bId in bullets) {
-      const b = bullets[bId];
-      b.range -= b.speed * simDeltaTime;
+    for (const b of Object.values(bullets)) {
       if (b.range > 0) {
+        b.range -= b.speed * simDeltaTime;
         b.x += b.speed * simDeltaTime * Math.cos(b.angle);
         b.y += b.speed * simDeltaTime * Math.sin(b.angle);
 
-        for (const pId in players) {
-          const p = players[pId];
+        for (const p of Object.values(players)) {
           if (p.dead) continue;
 
           const distX = p.x - b.x;
           const distY = p.y - b.y;
           const distance = Math.sqrt(distX * distX + distY * distY);
-          if (pId != b.playerId && distance <= p.radius + b.radius) {
+          if (p.id != b.playerId && distance <= p.radius + b.radius) {
             p.hp -= b.damage;
             p.specialColor = "#FF0000";
 
             setTimeout(() => {
-              players[pId].specialColor = undefined;
+              players[p.id].specialColor = undefined;
             }, 100);
 
-            delete bullets[bId];
+            removeBullet(b);
           }
 
           if (p.hp <= 0) {
-            playerDied(pId);
+            playerDied(p.id);
           }
         }
       } else {
-        delete bullets[bId];
+        removeBullet(b);
       }
     }
 
@@ -329,9 +193,7 @@ function serverUpdate() {
         let s = obs.coords[i];
         let e = obs.coords[i + 1];
 
-        for (const pId in players) {
-          let player = players[pId];
-
+        for (const player of Object.values(players)) {
           let lineX1 = e.x - s.x;
           let lineY1 = e.y - s.y;
           let lineX2 = player.x - s.x;
@@ -359,9 +221,7 @@ function serverUpdate() {
           }
         }
 
-        for (const bId in bullets) {
-          let bullet = bullets[bId];
-
+        for (const bullet of Object.values(bullets)) {
           let lineX1 = e.x - s.x;
           let lineY1 = e.y - s.y;
           let lineX2 = bullet.x - s.x;
@@ -384,7 +244,7 @@ function serverUpdate() {
             // static collision has occurred
             const overlap = 1.0 * (distance - bullet.radius - obs.radius);
 
-            delete bullets[bullet.id];
+            delete removeBullet(bullet);
             // bullet.x -= (overlap * (bullet.x - closestPointX)) / distance;
             // bullet.y -= (overlap * (bullet.y - closestPointY)) / distance;
           }
@@ -411,7 +271,7 @@ function playerDied(playerId) {
   sockets[playerId].emit("died", playerId);
 }
 
-setInterval(serverUpdate, updateTime);
+setInterval(serverUpdate, tps);
 setInterval(updateLeaderboard, 1000);
 
 function updateLeaderboard() {
@@ -432,102 +292,4 @@ function getTopScores(n) {
       return b.score - a.score;
     })
     .slice(0, n); //Exception arr.sort(...) is not a function
-}
-
-const PORT = argv.port ?? 8080;
-server.listen(PORT, () => {
-  console.log(`listening on *:${PORT}`);
-});
-
-function getVisiblePlayers(ownPlayer) {
-  // return players;
-  let visiblePlayers = {};
-
-  if (ownPlayer) {
-    let ownX = ownPlayer.x;
-    let ownY = ownPlayer.y;
-    let screenWidth = ownPlayer.visibleGameWidth;
-    let screenHeight = ownPlayer.visibleGameHeight;
-
-    for (let player in players) {
-      let otherPlayer = players[player];
-      if (!otherPlayer.dead) {
-        if (
-          otherPlayer.x + otherPlayer.radius >= ownX - screenWidth / 2 &&
-          otherPlayer.x - otherPlayer.radius <= ownX + screenWidth / 2
-        ) {
-          //x-check
-          if (
-            otherPlayer.y + otherPlayer.radius >= ownY - screenHeight / 2 &&
-            otherPlayer.y - otherPlayer.radius <= ownY + screenHeight / 2
-          ) {
-            //y-check
-            visiblePlayers[otherPlayer.id] = otherPlayer;
-          }
-        }
-      }
-    }
-  }
-  return visiblePlayers;
-}
-
-function getVisibleBullets(ownPlayer) {
-  // return bullets;
-  let visibleBullets = {};
-
-  if (ownPlayer) {
-    let ownX = ownPlayer.x;
-    let ownY = ownPlayer.y;
-    let screenWidth = ownPlayer.visibleGameWidth;
-    let screenHeight = ownPlayer.visibleGameHeight;
-
-    for (let bullet in bullets) {
-      let bulletToCheck = bullets[bullet];
-      if (
-        bulletToCheck.x + bulletToCheck.radius >= ownX - screenWidth / 2 &&
-        bulletToCheck.x - bulletToCheck.radius <= ownX + screenWidth / 2
-      ) {
-        //x-check
-        if (
-          bulletToCheck.y + bulletToCheck.radius >= ownY - screenHeight / 2 &&
-          bulletToCheck.y - bulletToCheck.radius <= ownY + screenHeight / 2
-        )
-          //y-check
-          visibleBullets[bulletToCheck.id] = bulletToCheck;
-      } //add radius
-    }
-  }
-
-  return visibleBullets;
-}
-
-function calculateVisibleDecoSprites(ownPlayer) {
-  // console.log(Object.keys(decoSprites));
-  // return Object.keys(decoSprites);
-  let visibleDecoSpriteIds = [];
-
-  if (ownPlayer) {
-    let ownX = ownPlayer.x;
-    let ownY = ownPlayer.y;
-    let screenWidth = ownPlayer.visibleGameWidth;
-    let screenHeight = ownPlayer.visibleGameHeight;
-
-    for (let decoSprite in decoSprites) {
-      let dsToCheck = decoSprites[decoSprite];
-      if (
-        dsToCheck.x + dsToCheck.sizeX / 2 >= ownX - screenWidth / 2 &&
-        dsToCheck.x - dsToCheck.sizeX / 2 <= ownX + screenWidth / 2
-      ) {
-        //x-check
-        if (
-          dsToCheck.y + dsToCheck.sizeY / 2 >= ownY - screenHeight / 2 &&
-          dsToCheck.y - dsToCheck.sizeY / 2 <= ownY + screenHeight / 2
-        )
-          //y-check
-          visibleDecoSpriteIds.push(dsToCheck.id);
-      }
-    }
-
-    return visibleDecoSpriteIds;
-  }
 }
