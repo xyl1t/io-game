@@ -118,20 +118,26 @@ function loop(timestamp) {
   ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
 
   ctx.save();
-  ctx.translate(canvas.width / 2, canvas.height / 2);
-  ctx.scale(game.renderScale, game.renderScale);
-  ctx.translate(-game.player.x, -game.player.y);
 
   // draw map
   if (game.map.htmlImage) {
     ctx.drawImage(
       game.map.htmlImage,
-      -game.map.width / 2,
-      -game.map.height / 2,
-      game.map.width,
-      game.map.height
+      game.player.x - game.player.visibleGameWidth / 2 + game.map.width/2,
+      game.player.y - game.player.visibleGameHeight / 2 + game.map.height/2,
+      game.player.visibleGameWidth,
+      game.player.visibleGameHeight,
+
+      0,
+      0,
+      game.windowWidth,
+      game.windowHeight,
     );
   }
+
+  ctx.translate(canvas.width / 2, canvas.height / 2);
+  ctx.scale(game.renderScale, game.renderScale);
+  ctx.translate(-game.player.x, -game.player.y);
 
   // draw bullets
   for (const [id, bullet] of Object.entries(game.bullets)) {
