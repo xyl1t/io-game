@@ -5,6 +5,9 @@
 /*  HTL Villach - Abteilung Informatik - 4AHIF                               */
 /*  (c) 2022/23                                                              */
 /*************************************************************************** */
+// TODO:
+// * time step: https://www.youtube.com/watch?v=lW6ZtvQVzyg
+//              https://www.gafferongames.com/post/fix_your_timestep/
 "use strict";
 
 import yargs from "yargs/yargs";
@@ -20,13 +23,7 @@ import { Server } from "socket.io";
 import { instrument } from "@socket.io/admin-ui";
 
 import { randBetween, dist, genId, getRandomColor } from "./lib/util.js";
-import {
-  Player,
-  players,
-  setPlayer,
-  removePlayer,
-  getVisiblePlayers,
-} from "./lib/players.js";
+import { Player, players, getVisiblePlayers } from "./lib/players.js";
 import {
   Bullet,
   bullets,
@@ -37,8 +34,8 @@ import {
 import {
   Sprite,
   sprites,
-  generateDecoSprites,
-  calculateVisibleDecoSprites,
+  generateBushes,
+  getVisibleSpriteIds,
 } from "./lib/sprites.js";
 import { Obstacle, obstacles } from "./lib/obstacles.js";
 import { map } from "./lib/maps.js";
@@ -66,7 +63,7 @@ const sockets = {};
 
 const millisBetweenShots = 150;
 
-generateDecoSprites(32);
+generateBushes(32);
 
 const tps = 1000 / 60; // ticks per second
 const simulationUpdates = 4; // number of physics updates in one tick
@@ -75,26 +72,23 @@ let lastTime = Date.now();
 let curTime = Date.now();
 let deltaTime = 0;
 
-io.use((socket, next) => {
-  // const username = socket.handshake.auth.username;
-  // if (!username) {
-  //   return next(new Error("invalid username"));
-  // }
-  // socket.username = username;
-  next();
-});
+// io.use((socket, next) => {
+//   next();
+// });
 
 io.on("connection", (socket) => {
   // const token = socket.handshake.auth.token;
   // if (token != "actualUser") socket.disconnect(true);
 
-  let player = new Player(socket);
+  let player = new Player(socket.id);
   sockets[socket.id] = socket;
   console.log("[io:connection]", players);
   socket.emit("welcome", socket.id, map, sprites, obstacles);
 
   socket.on("disconnect", () => {
-    removePlayer(socket.id);
+    players.splice(players.findIndex((p) => p.id == socket.id),
+      1
+    );
     delete sockets[socket.id];
     console.log("[io:disconnect]", players);
   });
@@ -102,13 +96,13 @@ io.on("connection", (socket) => {
   // NOTE: called when a player joins the game, this could also be a respawn!
   socket.on("join", (playerInfo) => {
     player = new Player(
-      socket,
+      socket.id,
       playerInfo.name,
       playerInfo.visibleGameWidth,
       playerInfo.visibleGameHeight
     );
     player.alive = true;
-    setPlayer(player);
+    players.push(player);
     io.emit("playerJoin", player);
     console.log("[io:join]", player);
   });
@@ -143,7 +137,7 @@ function serverUpdate() {
   let simDeltaTime = deltaTime / simulationUpdates;
 
   for (let iSim = 0; iSim < simulationUpdates; iSim++) {
-    for (const p of Object.values(players)) {
+    for (const p of players) {
       p.velX += p.accX * simDeltaTime;
       p.velY += p.accY * simDeltaTime;
       p.x += p.velX * simDeltaTime;
@@ -160,7 +154,7 @@ function serverUpdate() {
         b.x += b.speed * simDeltaTime * Math.cos(b.angle);
         b.y += b.speed * simDeltaTime * Math.sin(b.angle);
 
-        for (const p of Object.values(players)) {
+        for (const p of players) {
           if (!p.alive) continue;
 
           const distX = p.x - b.x;
@@ -171,7 +165,7 @@ function serverUpdate() {
             p.specialColor = "#FF0000";
 
             setTimeout(() => {
-              players[p.id].specialColor = undefined;
+              p.specialColor = undefined;
             }, 100);
 
             removeBullet(b);
@@ -179,6 +173,10 @@ function serverUpdate() {
           // player died
           if (p.hp <= 0) {
             p.alive = false;
+            players.splice(
+              players.findIndex((pl) => pl.id == p.id),
+              1
+            );
             sockets[p.id].emit("died", p.id);
           }
         }
@@ -193,7 +191,7 @@ function serverUpdate() {
         let s = obs.coords[i];
         let e = obs.coords[i + 1];
 
-        for (const player of Object.values(players)) {
+        for (const player of players) {
           let lineX1 = e.x - s.x;
           let lineY1 = e.y - s.y;
           let lineX2 = player.x - s.x;
@@ -253,12 +251,13 @@ function serverUpdate() {
     }
   }
 
-  for (let socket in sockets) {
-    sockets[socket].emit(
+  for (let player of players) {
+    sockets[player.id].emit(
       "serverUpdate",
-      getVisiblePlayers(players[sockets[socket].id]),
-      getVisibleBullets(players[sockets[socket].id]),
-      calculateVisibleDecoSprites(players[sockets[socket].id])
+      player,
+      getVisiblePlayers(player), // TODO: send ids instead of players or only the informating neccessary for drawing
+      getVisibleBullets(player),
+      getVisibleSpriteIds(player)
     );
   }
 }

@@ -15,11 +15,10 @@ export const game = {
   // game data
   player: {},
   socket: {},
-  players: {},
+  visiblePlayers: [],
   bullets: {},
   map: {},
-  decoSprites: {},
-  visibleDecoSpriteIds: [],
+  visibleSpriteIds: [],
   obstacles: [],
 
 

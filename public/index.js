@@ -6,114 +6,123 @@ let ctx;
 let curTime = Date.now();
 let lastTime = Date.now();
 
-$(() => {
-  setup();
+$(async () => {
+  await setup();
   loop();
 });
 
-function setup() {
-  // setup client /////////////////////////////////////////////////////////////
-  console.log("Loading canvas and context...");
-  const canvas = document.querySelector("#canvas");
-  resize(); // initialize render scale and canvas size and send that to the server
-  window.addEventListener("resize", resize, false);
-  canvas.addEventListener("mousedown", mousedown, false);
-  canvas.addEventListener("mouseup", mouseup, false);
-  canvas.addEventListener("mouseleave", mouseleave, false);
-  canvas.addEventListener("mousemove", mousemove, false);
-  canvas.addEventListener("wheel", wheel, false);
-  window.addEventListener("keydown", keydown, true);
-  window.addEventListener("keyup", keyup, true);
+async function setup() {
+  return new Promise((resolve, _reject) => {
+    // setup client ///////////////////////////////////////////////////////////
+    console.log("Loading canvas and context...");
+    const canvas = document.querySelector("#canvas");
+    resize(); // initialize render scale and canvas size and send that to the server
+    window.addEventListener("resize", resize, false);
+    canvas.addEventListener("mousedown", mousedown, false);
+    canvas.addEventListener("mouseup", mouseup, false);
+    canvas.addEventListener("mouseleave", mouseleave, false);
+    canvas.addEventListener("mousemove", mousemove, false);
+    canvas.addEventListener("wheel", wheel, false);
+    window.addEventListener("keydown", keydown, true);
+    window.addEventListener("keyup", keyup, true);
 
-  $("#btnStartGame").click(startClick);
-  $("#inputUsername").keypress((e) => {
-    if (event.key === "Enter") {
-      $("#btnStartGame").click();
-    }
-  });
+    $("#btnStartGame").click(startClick);
+    $("#inputUsername").keypress((e) => {
+      if (event.key === "Enter") {
+        $("#btnStartGame").click();
+      }
+    });
 
-  // disabling alpha for performance.... or maybe not
-  ctx = canvas.getContext("2d");
+    ctx = canvas.getContext("2d");
 
-  // socket stuff /////////////////////////////////////////////////////////////
+    // socket stuff ///////////////////////////////////////////////////////////
+    console.log("Establishing connection...");
+    game.socket = io({
+      auth: {
+        token: "actualUser", // authorize as a legit user
+      },
+    });
 
-  console.log("Establishing connection...");
-  game.socket = io({
-    auth: {
-      token: "actualUser", // authorize as a legit user
-    },
-  });
-
-  game.socket.on(
-    "welcome",
-    (socketId, mapFromServer, decoSpritesFromServer, obstaclesFromServer) => {
+    game.socket.on("welcome", (socketId, map, sprites, obstacles) => {
       game.player.id = socketId;
 
-      game.map = mapFromServer;
+      game.map = map;
       game.map.htmlImage = document.createElement("img");
       game.map.htmlImage.src = `/img/${game.map.name}.png`;
 
-      game.map.decoSprites = decoSpritesFromServer;
-      for (const id in game.map.decoSprites) {
-        game.map.decoSprites[id].htmlImage = document.createElement("img");
-        game.map.decoSprites[
+      // TODO: should the sprites really be stored in the map rather than
+      //       in the game object?
+      game.map.sprites = sprites;
+      for (const id in game.map.sprites) {
+        game.map.sprites[id].htmlImage = document.createElement("img");
+        game.map.sprites[
           id
-        ].htmlImage.src = `/img/${game.map.decoSprites[id].type}.png`;
+        ].htmlImage.src = `/img/${game.map.sprites[id].type}.png`;
       }
 
-      game.obstacles = obstaclesFromServer;
+      game.obstacles = obstacles;
 
       $("#btnStartGame").removeAttr("disabled");
       $("#inputUsername").removeAttr("disabled").focus();
-    }
-  );
+      resolve();
+    });
 
-  game.socket.on("playerJoin", (newPlayer) => {
-    if (game.player.id == newPlayer.id) {
-      game.player = newPlayer;
-      game.onJoinCallback();
-    }
-  });
-
-  game.socket.on(
-    "serverUpdate",
-    (playersFromServer, bulletsFromServer, decoSpriteIds) => {
-      game.players = playersFromServer;
-      game.bullets = bulletsFromServer;
-      game.visibleDecoSpriteIds = decoSpriteIds;
-
-      if (game.players[game.player.id]) {
-        game.player = game.players[game.player.id];
+    game.socket.on("playerJoin", (newPlayer) => {
+      if (game.player.id == newPlayer.id) {
+        game.player = newPlayer;
+        game.onJoinCallback();
       }
-    }
-  );
+    });
 
-  game.socket.on("leaderboardUpdate", (sortedTop10) => {
-    let strToDisplay = "";
-    for (let i = 0; i < sortedTop10.length; i++) {
-      strToDisplay += `<tr class="row"><td class="col-2">${
-        i + 1
-      }</td><td class="col">${sortedTop10[i].name}</td></tr>`;
-    }
-    $("#leaderboard").html(strToDisplay);
-  });
-
-  game.socket.on("died", (playerId) => {
-    // game.player = newPlayer
-    $("#game_elements").css("display", "none");
-    $("#settings_elements").css("display", "inline");
-    $("#died_screen").css("display", "inline");
-    $("#site_wrapper").addClass(
-      "jumbotron d-flex align-items-center vertical-center"
+    game.socket.on(
+      "serverUpdate",
+      (player, visiblePlayers, bullets, visibleSpriteIds) => {
+        game.player = player;
+        game.visiblePlayers = visiblePlayers;
+        game.bullets = bullets;
+        game.visibleSpriteIds = visibleSpriteIds;
+      }
     );
-    $("#deathText").css("display", "block");
 
-    game.onDeathCallback();
+    game.socket.on("leaderboardUpdate", (sortedTop10) => {
+      let strToDisplay = "";
+      for (let i = 0; i < sortedTop10.length; i++) {
+        strToDisplay += `<tr class="row"><td class="col-2">${
+          i + 1
+        }</td><td class="col">${sortedTop10[i].name}</td></tr>`;
+      }
+      $("#leaderboard").html(strToDisplay);
+    });
+
+    game.socket.on("died", (playerId) => {
+      // game.player = newPlayer
+      $("#game_elements").css("display", "none");
+      $("#settings_elements").css("display", "inline");
+      $("#died_screen").css("display", "inline");
+      $("#site_wrapper").addClass(
+        "jumbotron d-flex align-items-center vertical-center"
+      );
+      $("#deathText").css("display", "block");
+
+      game.onDeathCallback();
+    });
   });
 }
 
 let oldTimestamp = 0;
 function loop(timestamp) {
+  if (game.player.alive) {
+    draw();
+  }
+
+  // game logic /////////////////////////////////////////////
+  const elapsedTime = timestamp - oldTimestamp;
+  game.onLoopCallback(elapsedTime); // callback
+  oldTimestamp = timestamp;
+  window.requestAnimationFrame(loop);
+}
+
+function draw() {
   ctx.fillStyle = "#fff";
   ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
 
@@ -145,19 +154,16 @@ function loop(timestamp) {
   }
 
   // draw players
-  drawPlayer(game.player);
-  for (const [id, player] of Object.entries(game.players)) {
-    if (game.player.id != id) {
-      drawPlayer(player);
-    }
+  for (const player of game.visiblePlayers) {
+    drawPlayer(player);
   }
 
-  // only draw visible deco sprites
-  if (game.visibleDecoSpriteIds) {
-    for (const id of game.visibleDecoSpriteIds) {
-      const ds = game.map.decoSprites[id];
+  // only draw visible sprites
+  if (game.visibleSpriteIds) {
+    for (const id of game.visibleSpriteIds) {
+      const ds = game.map.sprites[id];
       if (ds) {
-        drawDecoSprite(ds);
+        drawSprite(ds);
       }
     }
   }
@@ -196,12 +202,6 @@ function loop(timestamp) {
   }
 
   ctx.restore();
-
-  // game logic /////////////////////////////////////////////
-  const elapsedTime = timestamp - oldTimestamp;
-  game.onLoopCallback(elapsedTime); // callback
-  oldTimestamp = timestamp;
-  window.requestAnimationFrame(loop);
 }
 
 function drawPlayer(player) {
@@ -295,7 +295,7 @@ function drawBullet(bullet) {
   ctx.restore();
 }
 
-function drawDecoSprite(ds) {
+function drawSprite(ds) {
   ctx.save();
   ctx.translate(ds.x, ds.y);
 
