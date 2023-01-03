@@ -33,8 +33,10 @@ game.onLoop((elapsedTime) => {
   }
 
   if (moveX != 0 || moveY != 0) {
-    game.player.movementAngle = Math.atan2(moveY, moveX);
-    game.socket.emit("playerMove", game.player);
+    game.socket.emit("playerMove", {
+      playerId: game.player.id,
+      direction: Math.atan2(moveY, moveX), // angle
+    });
   }
 
   // mouse moved
@@ -44,11 +46,14 @@ game.onLoop((elapsedTime) => {
     game.mouse.angle = Math.atan2(dy, dx);
 
     game.player.turretAngle = game.mouse.angle;
-    game.socket.emit("mouseMove", game.player);
+    game.socket.emit("mouseMove", {
+      playerId: game.player.id,
+      angle: game.mouse.angle
+    });
   }
 
   if (game.mouse.leftDown || game.mouse.rightDown) {
-    game.socket.emit("shoot", game.player);
+    game.socket.emit("shoot");
   }
 });
 

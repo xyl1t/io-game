@@ -123,15 +123,15 @@ function loop(timestamp) {
   if (game.map.htmlImage) {
     ctx.drawImage(
       game.map.htmlImage,
-      game.player.x - game.player.visibleGameWidth / 2 + game.map.width/2,
-      game.player.y - game.player.visibleGameHeight / 2 + game.map.height/2,
+      game.player.x - game.player.visibleGameWidth / 2 + game.map.width / 2,
+      game.player.y - game.player.visibleGameHeight / 2 + game.map.height / 2,
       game.player.visibleGameWidth,
       game.player.visibleGameHeight,
 
       0,
       0,
       game.windowWidth,
-      game.windowHeight,
+      game.windowHeight
     );
   }
 
@@ -348,7 +348,11 @@ function resize() {
   game.player.visibleGameWidth = game.windowWidth * (1 / game.renderScale);
   game.player.visibleGameHeight = game.windowHeight * (1 / game.renderScale);
   if (game.socket.id) {
-    game.socket.emit("playerScreenResize", game.player);
+    game.socket.emit(
+      "playerScreenResize",
+      game.player.visibleGameWidth,
+      game.player.visibleGameHeight
+    );
   }
 }
 

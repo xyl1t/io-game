@@ -62,24 +62,33 @@ server.listen(PORT, () => {
   console.log(`[server] listening on *:${PORT}`);
 });
 
-const tps = 1000 / 60; // ticks per second
-const simulationUpdates = 4; // number of physics engine updates in one tick
-
-let lastTime = Date.now();
-let curTime = Date.now();
-let deltaTime = 0;
-
-// TODO: maybe the socket IS the player?
 const sockets = {};
 
 const millisBetweenShots = 150;
 
 generateDecoSprites(32);
 
-io.on("connection", (socket) => {
-  const token = socket.handshake.auth.token;
-  if (token != "actualUser") socket.disconnect(true);
+const tps = 1000 / 60; // ticks per second
+const simulationUpdates = 4; // number of physics updates in one tick
 
+let lastTime = Date.now();
+let curTime = Date.now();
+let deltaTime = 0;
+
+io.use((socket, next) => {
+  // const username = socket.handshake.auth.username;
+  // if (!username) {
+  //   return next(new Error("invalid username"));
+  // }
+  // socket.username = username;
+  next();
+});
+
+io.on("connection", (socket) => {
+  // const token = socket.handshake.auth.token;
+  // if (token != "actualUser") socket.disconnect(true);
+
+  let player = new Player(socket);
   sockets[socket.id] = socket;
   console.log("[io:connection]", players);
   socket.emit("welcome", socket.id, map, sprites, obstacles);
@@ -92,7 +101,7 @@ io.on("connection", (socket) => {
 
   // NOTE: called when a player joins the game, this could also be a respawn!
   socket.on("join", (playerInfo) => {
-    const player = new Player(
+    player = new Player(
       socket,
       playerInfo.name,
       playerInfo.visibleGameWidth,
@@ -104,33 +113,24 @@ io.on("connection", (socket) => {
     console.log("[io:join]", player);
   });
 
-  socket.on("mouseMove", (player) => {
-    if (players[player.id]) {
-      players[player.id].turretAngle = player.turretAngle;
-    }
+  socket.on("mouseMove", (mouseInfo) => {
+    player.turretAngle = mouseInfo.angle;
   });
 
-  socket.on("playerMove", (player) => {
-    if (players[player.id]) {
-      players[player.id].accX = player.speed * Math.cos(player.movementAngle);
-      players[player.id].accY = player.speed * Math.sin(player.movementAngle);
-    }
+  socket.on("playerMove", (moveInfo) => {
+    player.accX = player.speed * Math.cos(moveInfo.direction);
+    player.accY = player.speed * Math.sin(moveInfo.direction);
   });
 
-  socket.on("playerScreenResize", (player) => {
-    if (players[player.id]) {
-      players[player.id].visibleGameWidth = player.visibleGameWidth;
-      players[player.id].visibleGameHeight = player.visibleGameHeight;
-    }
+  socket.on("playerScreenResize", (width, height) => {
+    player.visibleGameWidth = width;
+    player.visibleGameHeight = height;
   });
 
-  socket.on("shoot", (player) => {
-    if (
-      players[player.id]?.alive &&
-      Date.now() - players[player.id].lastShotTime > millisBetweenShots
-    ) {
+  socket.on("shoot", () => {
+    if (player.alive && Date.now() - player.lastShotTime > millisBetweenShots) {
       setBullet(new Bullet(player));
-      players[player.id].lastShotTime = Date.now();
+      player.lastShotTime = Date.now();
     }
   });
 });
@@ -261,9 +261,6 @@ function serverUpdate() {
       calculateVisibleDecoSprites(players[sockets[socket].id])
     );
   }
-}
-
-function playerDied(playerId) {
 }
 
 setInterval(serverUpdate, tps);
