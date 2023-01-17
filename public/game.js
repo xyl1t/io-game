@@ -1,4 +1,11 @@
+const tickRate = 60;
+
 export const game = {
+
+  tickRate, // how many ticks in one second
+  dt: 1 / tickRate, // time between ticks in seconds
+  currentTick: 0, // integer
+
   // input
   mouse: {
     oldX: 0,
@@ -20,7 +27,6 @@ export const game = {
   map: {},
   visibleSpriteIds: [],
   obstacles: [],
-
 
   // client data
   windowWidth: -1, // window width and height have to be set when client is loaded

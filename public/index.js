@@ -8,7 +8,7 @@ let lastTime = Date.now();
 
 $(async () => {
   await setup();
-  loop();
+  gameloop(0);
 });
 
 async function setup() {
@@ -74,15 +74,15 @@ async function setup() {
       }
     });
 
-    game.socket.on(
-      "serverUpdate",
-      (player, visiblePlayers, bullets, visibleSpriteIds) => {
-        game.player = player;
-        game.visiblePlayers = visiblePlayers;
-        game.bullets = bullets;
-        game.visibleSpriteIds = visibleSpriteIds;
-      }
-    );
+    // game.socket.on(
+    //   "serverUpdate",
+    //   (player, visiblePlayers, bullets, visibleSpriteIds) => {
+    //     // game.player = player;
+    //     game.visiblePlayers = visiblePlayers;
+    //     game.bullets = bullets;
+    //     game.visibleSpriteIds = visibleSpriteIds;
+    //   }
+    // );
 
     game.socket.on("leaderboardUpdate", (sortedTop10) => {
       let strToDisplay = "";
@@ -109,20 +109,29 @@ async function setup() {
   });
 }
 
-let oldTimestamp = 0;
-function loop(timestamp) {
-  if (game.player.alive) {
-    draw();
+let oldTime = 0;
+let accumulator = 0;
+
+function gameloop(currentTime = 0) {
+  currentTime /= 1000; // convert from ms to seconds
+  const frameTime = currentTime - oldTime;
+  oldTime = currentTime;
+  accumulator += frameTime;
+
+  while (accumulator >= game.dt) {
+    accumulator -= game.dt;
+    game.onLoopCallback(); // callback
+    game.currentTick++;
   }
 
-  // game logic /////////////////////////////////////////////
-  const elapsedTime = timestamp - oldTimestamp;
-  game.onLoopCallback(elapsedTime); // callback
-  oldTimestamp = timestamp;
-  window.requestAnimationFrame(loop);
+  draw();
+
+  window.requestAnimationFrame(gameloop);
 }
 
 function draw() {
+  if (!game.player.alive) return;
+
   ctx.fillStyle = "#fff";
   ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
 
@@ -154,8 +163,10 @@ function draw() {
   }
 
   // draw players
+  drawPlayer(game.player);
   for (const player of game.visiblePlayers) {
-    drawPlayer(player);
+    if (player.id != game.player.id)
+      drawPlayer(player);
   }
 
   // only draw visible sprites
@@ -382,6 +393,9 @@ function mousemove(e) {
   game.mouse.oldY = game.mouse.y;
   game.mouse.x = e.pageX - canvas.offsetLeft;
   game.mouse.y = e.pageY - canvas.offsetTop;
+  const dx = game.mouse.x - game.windowWidth / 2;
+  const dy = game.mouse.y - game.windowHeight / 2;
+  game.mouse.angle = Math.atan2(dy, dx);
   game.mouse.leftDown = (e.buttons & 1) == 1;
   game.mouse.rightDown = (e.buttons & 2) == 2;
 }
