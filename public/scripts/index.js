@@ -67,7 +67,7 @@ async function setup() {
     // NOTE: Reset the world and register components again, if you don't do this,
     // deleting entities in the server won't be visible on the client
     resetWorld(world);
-    // registerComponents(world, [Position, Sprite, Velocity]);
+    registerComponents(world, [Position, Sprite, Velocity]);
 
     // NOTE: notice the mode is MAP, this is necessary to sync with the server
     // the return value is actually not needed
