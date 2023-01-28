@@ -3,18 +3,19 @@
   "version": "1.0.0",
   "description": "learning sockets",
   "main": "server.js",
+  "type": "module",
   "scripts": {
-    "start": "node server.js",
-    "nodemon": "nodemon server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node ./lib/server.js",
+    "dev": "npx nodemon ./lib/server.js"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/xyl1t/js-multiplayer-game.git"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "Marat Isaw",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/xyl1t/js-multiplayer-game/issues"
   },

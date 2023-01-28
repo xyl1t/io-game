@@ -1,0 +1,23 @@
+* {
+  font-family: "Roboto", sans-serif, "Arial";
+}
+
+html,
+body,
+div,
+canvas {
+  margin: 0px;
+  padding: 0px;
+}
+
+body {
+  overflow: hidden;
+}
+
+canvas {
+  display: block;
+}
+
+/* body { */
+/*   overflow: hidden; */
+/* } */
