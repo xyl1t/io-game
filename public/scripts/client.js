@@ -1,5 +1,4 @@
-import { game } from "/game.js";
-import { Bullet } from "../lib/bullets.js";
+import { game } from "./game.js";
 import {
   InputPayload,
   StatePayload,

@@ -88,7 +88,7 @@ generateBushes(32);
 //   next();
 // });
 
-const tickRate = 20;
+const tickRate = 60;
 const dt = 1 / tickRate;
 
 let currentTime = Date.now() / 1000;
