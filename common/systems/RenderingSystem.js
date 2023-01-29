@@ -20,6 +20,8 @@ export const renderingSystem = defineSystem((world) => {
       Position.y[id]
     );
   }
+  ctx.strokeStyle = "black";
+  ctx.strokeRect(0, 0, 400, 300);
   ctx.restore();
 
   return world;

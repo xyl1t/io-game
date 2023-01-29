@@ -1,8 +1,1098 @@
-/**
- * Bundled by jsDelivr using Rollup v2.74.1 and Terser v5.15.1.
- * Original file: /npm/bitecs@0.3.38/dist/index.mjs
- *
- * Do NOT use SRI with dynamically generated files! More information: https://www.jsdelivr.com/using-sri-with-dynamic-files
- */
-var e,t={i8:"i8",ui8:"ui8",ui8c:"ui8c",i16:"i16",ui16:"ui16",i32:"i32",ui32:"ui32",f32:"f32",f64:"f64",eid:"eid"},n={i8:"Int8",ui8:"Uint8",ui8c:"Uint8Clamped",i16:"Int16",ui16:"Uint16",i32:"Int32",ui32:"Uint32",eid:"Uint32",f32:"Float32",f64:"Float64"},r={i8:Int8Array,ui8:Uint8Array,ui8c:Uint8ClampedArray,i16:Int16Array,ui16:Uint16Array,i32:Int32Array,ui32:Uint32Array,f32:Float32Array,f64:Float64Array,eid:Uint32Array},o=256,s=65536,i=(e=4,t=>Math.ceil(t/e)*e),a=Symbol("storeRef"),c=Symbol("storeSize"),l=Symbol("storeMaps"),f=Symbol("storeFlattened"),u=Symbol("storeBase"),y=Symbol("storeType"),d=Symbol("storeArrayElementCounts"),h=Symbol("storeSubarrays"),g=Symbol("subarrayCursors"),p=Symbol("subarray"),m=Symbol("parentArray"),E=Symbol("tagStore"),b=Symbol("indexType"),S=Symbol("indexBytes"),w=Symbol("isEidType"),A={},M=(e,t)=>{const n=new ArrayBuffer(t*e.BYTES_PER_ELEMENT),r=new e.constructor(n);return r.set(e,0),r},O=(e,t)=>{if(ArrayBuffer.isView(e))e[t]=e.slice(0);else{const n=e[m].slice(0);e[t]=e.map(((t,r)=>{const{length:o}=e[r],s=o*r,i=s+o;return n.subarray(s,i)}))}},v=(e,a,c)=>{Object.keys(a).forEach((l=>{const u=a[l];Array.isArray(u)?(((e,a,c)=>{const l=e[g];let f=a[y];const u=a[0].length,E=u<=o?t.ui8:u<=s?t.ui16:t.ui32;if(0===l[f]){const t=e[d][f],o=new r[f](i(t*c));o.set(e[h][f]),e[h][f]=o,o[b]=n[E],o[S]=r[E].BYTES_PER_ELEMENT}const w=l[f],A=w+c*u;l[f]=A,a[m]=e[h][f].subarray(w,A);for(let e=0;e<c;e++){const t=u*e,o=t+u;a[e]=a[m].subarray(t,o),a[e][b]=n[E],a[e][S]=r[E].BYTES_PER_ELEMENT,a[e][p]=!0}})(e,u,c),a[f].push(u)):ArrayBuffer.isView(u)?(a[l]=M(u,c),a[f].push(a[l])):"object"==typeof u&&v(e,a[l],c)}))},P=(e,t)=>{e[E]||(e[c]=t,e[f].length=0,Object.keys(e[g]).forEach((t=>{e[g][t]=0})),v(e,e,t))},C=(e,t)=>{e[f]&&e[f].forEach((e=>{ArrayBuffer.isView(e)?e[t]=0:e[t].fill(0)}))},R=e=>e[m],T=e=>Array.isArray(e)&&"string"==typeof e[0]&&"number"==typeof e[1],j=(e,M)=>{const O=Symbol("store");if(!e||!Object.keys(e).length)return A[O]={[c]:M,[E]:!0,[u]:()=>A[O]},A[O];e=JSON.parse(JSON.stringify(e));const v={},P=e=>{const t=Object.keys(e);for(const n of t)T(e[n])?(v[e[n][0]]||(v[e[n][0]]=0),v[e[n][0]]+=e[n][1]):e[n]instanceof Object&&P(e[n])};P(e);const C={[c]:M,[l]:{},[h]:{},[a]:O,[g]:Object.keys(r).reduce(((e,t)=>({...e,[t]:0})),{}),[f]:[],[d]:v};if(e instanceof Object&&Object.keys(e).length){const a=(e,l)=>{if("string"==typeof e[l])e[l]=((e,n)=>{const o=n*r[e].BYTES_PER_ELEMENT,s=new ArrayBuffer(o),i=new r[e](s);return i[w]=e===t.eid,i})(e[l],M),e[l][u]=()=>A[O],C[f].push(e[l]);else if(T(e[l])){const[a,E]=e[l];e[l]=((e,a,l)=>{const f=e[c],u=Array(f).fill(0);u[y]=a,u[w]=a===t.eid;const E=e[g],A=l<=o?t.ui8:l<=s?t.ui16:t.ui32;if(!l)throw new Error("bitECS - Must define component array length");if(!r[a])throw new Error(`bitECS - Invalid component array property type ${a}`);if(!e[h][a]){const t=e[d][a],o=new r[a](i(t*f));o[b]=n[A],o[S]=r[A].BYTES_PER_ELEMENT,e[h][a]=o}const M=E[a],O=M+f*l;E[a]=O,u[m]=e[h][a].subarray(M,O);for(let e=0;e<f;e++){const t=l*e,o=t+l;u[e]=u[m].subarray(t,o),u[e][b]=n[A],u[e][S]=r[A].BYTES_PER_ELEMENT,u[e][p]=!0}return u})(C,a,E),e[l][u]=()=>A[O],C[f].push(e[l])}else e[l]instanceof Object&&(e[l]=Object.keys(e[l]).reduce(a,e[l]));return e};return A[O]=Object.assign(Object.keys(e).reduce(a,e),C),A[O][u]=()=>A[O],A[O]}},B=()=>{const e=[],t=[];e.sort=function(n){const r=Array.prototype.sort.call(this,n);for(let n=0;n<e.length;n++)t[e[n]]=n;return r};const n=n=>e[t[n]]===n;return{add:r=>{n(r)||(t[r]=e.push(r)-1)},remove:r=>{if(!n(r))return;const o=t[r],s=e.pop();s!==r&&(e[o]=s,t[s]=o)},has:n,sparse:t,dense:e}},_={REPLACE:0,APPEND:1,MAP:2},k=!1,U=(e,t)=>e.concat(t),I=e=>t=>!e(t),N=e=>e[f],L=N,x=I(L),$=e=>"function"==typeof e,q=I($),Y=e=>$(e)&&"changed"===e()[1],V=e=>Object.getOwnPropertySymbols(e).includes(Be),z=e=>e()[0],F=e=>{if(V(e))return[[],new Map];const t=e.filter(q).filter(L).map(N).reduce(U,[]),n=e.filter(Y).map(z).filter(L).map(N).reduce(U,[]),r=e.filter(q).filter(x),o=e.filter(Y).map(z).filter(x);return[[...t,...r,...n,...o],[...n,...o].reduce(((e,t)=>{const n=Symbol();return O(t,n),e.set(t,n),e}),new Map)]},Q=(e,t=2e7)=>{const n=V(e);let[r,o]=F(e);const s=new ArrayBuffer(t),i=new DataView(s),a=new Map;return t=>{let c;k&&([r,o]=F(e),k=!1),n&&(r=[],e[Be].forEach(((e,t)=>{t[f]?r.push(...t[f]):r.push(t)}))),Object.getOwnPropertySymbols(t).includes(Be)?(c=t,t=t[W]):c=oe.get(t[0]);let l=0;if(!t.length)return s.slice(0,l);const y=new Map;for(let e=0;e<r.length;e++){const n=r[e],s=n[u](),f=o.get(n),d=f?n[f]:null;y.has(s)||y.set(s,new Map),i.setUint8(l,e),l+=1;const h=l;l+=4;let g=0;for(let e=0;e<t.length;e++){const r=t[e];let o=a.get(r);o||(o=a.set(r,new Set).get(r)),o.add(r);const f=d&&y.get(s).get(r)||!o.has(s)&&Le(c,s,r);if(y.get(s).set(r,f),f)o.add(s);else if(!Le(c,s,r)){o.delete(s);continue}const u=l;if(i.setUint32(l,r),l+=4,n[E])g++;else if(ArrayBuffer.isView(n[r])){const e=n[r].constructor.name.replace("Array",""),t=n[r][b],o=n[r][S],s=l;l+=o;let a=0;for(let s=0;s<n[r].length;s++){if(d){const e=d[r][s]!==n[r][s];if(d[r][s]=n[r][s],!e&&!f)continue}i[`set${t}`](l,s),l+=o;const c=n[r][s];i[`set${e}`](l,c),l+=n[r].BYTES_PER_ELEMENT,a++}if(!(a>0)){l=u;continue}i[`set${t}`](s,a),g++}else{if(d){const e=d[r]!==n[r];if(d[r]=n[r],!e&&!f){l=u;continue}}const e=n.constructor.name.replace("Array","");i[`set${e}`](l,n[r]),l+=n.BYTES_PER_ELEMENT,g++}}g>0?i.setUint32(h,g):l-=5}return s.slice(0,l)}},D=new Map,J=e=>{const t=Object.getOwnPropertySymbols(e).includes(Be);let[n]=F(e);const r=new Set;return(o,s,i=0)=>{D.clear(),k&&([n]=F(e),k=!1),t&&(n=[],e[Be].forEach(((e,t)=>{t[f]?n.push(...t[f]):n.push(t)})));const a=o[Fe],c=o[Qe],l=new DataView(s);let y=0;for(;y<s.byteLength;){const e=l.getUint8(y);y+=1;const t=l.getUint32(y);y+=4;const s=n[e];for(let e=0;e<t;e++){let e=l.getUint32(y);if(y+=4,i===_.MAP)if(a.has(e))e=a.get(e);else if(D.has(e))e=D.get(e);else{const t=se(o);a.set(e,t),c.set(t,e),D.set(e,t),e=t}if(i===_.APPEND||i===_.REPLACE&&!o[K].has(e)){const t=D.get(e)||se(o);D.set(e,t),e=t}const t=s[u]();if(Le(o,t,e)||xe(o,t,e),r.add(e),!t[E])if(ArrayBuffer.isView(s[e])){const t=s[e],n=l[`get${t[b]}`](y);y+=t[S];for(let r=0;r<n;r++){const n=l[`get${t[b]}`](y);y+=t[S];const r=l[`get${t.constructor.name.replace("Array","")}`](y);if(y+=t.BYTES_PER_ELEMENT,s[w]){let t;if(a.has(r))t=a.get(r);else if(D.has(r))t=D.get(r);else{const e=se(o);a.set(r,e),c.set(e,r),D.set(r,e),t=e}s[e][n]=t}else s[e][n]=r}}else{const t=l[`get${s.constructor.name.replace("Array","")}`](y);if(y+=s.BYTES_PER_ELEMENT,s[w]){let n;if(a.has(t))n=a.get(t);else if(D.has(t))n=D.get(t);else{const e=se(o);a.set(t,e),c.set(e,t),D.set(t,e),n=e}s[e]=n}else s[e]=t}}}const d=Array.from(r);return r.clear(),d}},G=Symbol("entityMasks"),H=Symbol("entityComponents"),K=Symbol("entitySparseSet"),W=Symbol("entityArray"),X=1e5,Z=0,ee=X,te=()=>ee,ne=[],re=e=>{const t=ee;ee=X=e,Z=0,ne.length=0,ee=e,Je(e),ke(e),k=!0,console.info(`👾 bitECS - resizing all data stores from ${t} to ${e}`)},oe=new Map,se=e=>{if(Z>=ee-ee/5){const e=ee,t=4*Math.ceil(e/2/4);re(e+t)}const t=ne.length>Math.round(.01*X)?ne.shift():Z++;return e[K].add(t),oe.set(t,e),e[ye].forEach((n=>{Oe(e,n,t)&&ve(n,t)})),e[H].set(t,new Set),t},ie=(e,t)=>{if(e[K].has(t)){e[ue].forEach((n=>{Re(e,n,t)})),ne.push(t),e[K].remove(t),e[H].delete(t),e[Fe].delete(e[Qe].get(t)),e[Qe].delete(t);for(let n=0;n<e[G].length;n++)e[G][n][t]=0}},ae=(e,t)=>{if(void 0===t)throw new Error("bitECS - entity is undefined.");if(!e[K].has(t))throw new Error("bitECS - entity does not exist in the world.");return Array.from(e[H].get(t))},ce=(e,t)=>e[K].has(t);function le(e){return()=>[e,"not"]}function fe(e){return()=>[e,"changed"]}var ue=Symbol("queries"),ye=Symbol("notQueries"),de=Symbol("queryAny"),he=Symbol("queryAll"),ge=Symbol("queryNone"),pe=Symbol("queryMap"),me=Symbol("$dirtyQueries"),Ee=Symbol("queryComponents"),be=e=>t=>{t[pe].has(e)||we(t,e);const n=t[pe].get(e),r=n.entered.dense.slice();return n.entered=B(),r},Se=e=>t=>{t[pe].has(e)||we(t,e);const n=t[pe].get(e),r=n.exited.dense.slice();return n.exited=B(),r},we=(e,t)=>{const n=[],r=[],o=[];t[Ee].forEach((t=>{if("function"==typeof t){const[s,i]=t();e[Be].has(s)||Ie(e,s),"not"===i&&r.push(s),"changed"===i&&(o.push(s),n.push(s))}else e[Be].has(t)||Ie(e,t),n.push(t)}));const s=t=>e[Be].get(t),i=n.concat(r).map(s),a=B(),c=B(),l=B(),u=B(),y=i.map((e=>e.generationId)).reduce(((e,t)=>(e.includes(t)||e.push(t),e)),[]),d=(e,t)=>(e[t.generationId]||(e[t.generationId]=0),e[t.generationId]|=t.bitflag,e),h=n.map(s).reduce(d,{}),g=r.map(s).reduce(d,{}),p=i.reduce(d,{}),m=n.filter((e=>!e[E])).map((e=>Object.getOwnPropertySymbols(e).includes(f)?e[f]:[e])).reduce(((e,t)=>e.concat(t)),[]),b=Object.assign(a,{archetypes:[],changed:[],components:n,notComponents:r,changedComponents:o,allComponents:i,masks:h,notMasks:g,hasMasks:p,generations:y,flatProps:m,toRemove:c,entered:l,exited:u,shadows:[]});e[pe].set(t,b),e[ue].add(b),i.forEach((e=>{e.queries.add(b)})),r.length&&e[ye].add(b);for(let t=0;t<Z;t++){if(!e[K].has(t))continue;Oe(e,b,t)&&ve(b,t)}},Ae=(e,t)=>{const n=Symbol(),r=e.flatProps[t];return O(r,n),e.shadows[t]=r[n],r[n]},Me=(...e)=>{let t;if(Array.isArray(e[0])&&(t=e[0]),void 0===t||void 0!==t[Be])return e=>e?e[W]:t[W];const n=function(e,t=!0){e[pe].has(n)||we(e,n);const r=e[pe].get(n);return Ce(e),r.changedComponents.length?((e,t)=>{t&&(e.changed=[]);const{flatProps:n,shadows:r}=e;for(let t=0;t<e.dense.length;t++){const o=e.dense[t];let s=!1;for(let t=0;t<n.length;t++){const i=n[t],a=r[t]||Ae(e,t);if(ArrayBuffer.isView(i[o])){for(let e=0;e<i[o].length;e++)if(i[o][e]!==a[o][e]){s=!0;break}a[o].set(i[o])}else i[o]!==a[o]&&(s=!0,a[o]=i[o])}s&&e.changed.push(o)}return e.changed})(r,t):r.dense};return n[Ee]=t,n[de]=undefined,n[he]=undefined,n[ge]=undefined,n},Oe=(e,t,n)=>{const{masks:r,notMasks:o,generations:s}=t;for(let t=0;t<s.length;t++){const i=s[t],a=r[i],c=o[i],l=e[G][i][n];if(c&&0!=(l&c))return!1;if(a&&(l&a)!==a)return!1}return!0},ve=(e,t)=>{e.toRemove.remove(t),e.entered.add(t),e.add(t)},Pe=e=>{for(let t=e.toRemove.dense.length-1;t>=0;t--){const n=e.toRemove.dense[t];e.toRemove.remove(n),e.remove(n)}},Ce=e=>{e[me].size&&(e[me].forEach(Pe),e[me].clear())},Re=(e,t,n)=>{t.has(n)&&!t.toRemove.has(n)&&(t.toRemove.add(n),e[me].add(t),t.exited.add(n))},Te=(e,t)=>{e[pe].get(t).changed=[]},je=(e,t)=>{const n=e[pe].get(t);e[ue].delete(n),e[pe].delete(t)},Be=Symbol("componentMap"),_e=[],ke=e=>{_e.forEach((t=>P(t,e)))},Ue=(e,t)=>{const n=j(e,t||te());return e&&Object.keys(e).length&&_e.push(n),n},Ie=(e,t)=>{if(!t)throw new Error("bitECS - Cannot register null or undefined component");const n=new Set,r=new Set,o=new Set;e[ue].forEach((e=>{e.allComponents.includes(t)&&n.add(e)})),e[Be].set(t,{generationId:e[G].length-1,bitflag:e[Ve],store:t,queries:n,notQueries:r,changedQueries:o}),t[c]<te()&&P(t,te()),(e=>{e[Ve]*=2,e[Ve]>=2**31&&(e[Ve]=1,e[G].push(new Uint32Array(e[qe])))})(e)},Ne=(e,t)=>{t.forEach((t=>Ie(e,t)))},Le=(e,t,n)=>{const r=e[Be].get(t);if(!r)return!1;const{generationId:o,bitflag:s}=r;return(e[G][o][n]&s)===s},xe=(e,t,n,r=!1)=>{if(void 0===n)throw new Error("bitECS - entity is undefined.");if(!e[K].has(n))throw new Error("bitECS - entity does not exist in the world.");if(e[Be].has(t)||Ie(e,t),Le(e,t,n))return;const o=e[Be].get(t),{generationId:s,bitflag:i,queries:a,notQueries:c}=o;e[G][s][n]|=i,a.forEach((t=>{t.toRemove.has(n)&&t.toRemove.remove(n);const r=Oe(e,t,n);r&&ve(t,n),r||Re(e,t,n)})),e[H].get(n).add(t),r&&C(t,n)},$e=(e,t,n,r=!0)=>{if(void 0===n)throw new Error("bitECS - entity is undefined.");if(!e[K].has(n))throw new Error("bitECS - entity does not exist in the world.");if(!Le(e,t,n))return;const o=e[Be].get(t),{generationId:s,bitflag:i,queries:a}=o;e[G][s][n]&=~i,a.forEach((t=>{t.toRemove.has(n)&&t.toRemove.remove(n);const r=Oe(e,t,n);r&&ve(t,n),r||Re(e,t,n)})),e[H].get(n).delete(t),r&&C(t,n)},qe=Symbol("size"),Ye=Symbol("resizeThreshold"),Ve=Symbol("bitflag"),ze=Symbol("archetypes"),Fe=Symbol("localEntities"),Qe=Symbol("localEntityLookp"),De=[],Je=e=>{De.forEach((t=>{t[qe]=e;for(let n=0;n<t[G].length;n++){const r=t[G][n];t[G][n]=M(r,e)}t[Ye]=t[qe]-t[qe]/5}))},Ge=(...e)=>{const t="object"==typeof e[0]?e[0]:{},n="number"==typeof e[0]?e[0]:"number"==typeof e[1]?e[1]:te();return He(t,n),De.push(t),t},He=(e,t=te())=>(e[qe]=t,e[W]&&e[W].forEach((t=>ie(e,t))),e[G]=[new Uint32Array(t)],e[H]=new Map,e[ze]=[],e[K]=B(),e[W]=e[K].dense,e[Ve]=1,e[Be]=new Map,e[pe]=new Map,e[ue]=new Set,e[ye]=new Set,e[me]=new Set,e[Fe]=new Map,e[Qe]=new Map,e),Ke=e=>{Object.getOwnPropertySymbols(e).forEach((t=>{delete e[t]})),Object.keys(e).forEach((t=>{delete e[t]})),De.splice(De.indexOf(e),1)},We=e=>Array.from(e[Be].keys()),Xe=e=>(t,...n)=>(e(t,...n),t),Ze=(...e)=>t=>{let n=t;for(let t=0;t<e.length;t++){n=(0,e[t])(n)}return n},et=t;export{fe as Changed,_ as DESERIALIZE_MODE,le as Not,et as Types,xe as addComponent,se as addEntity,Ce as commitRemovals,Ge as createWorld,Ue as defineComponent,J as defineDeserializer,Me as defineQuery,Q as defineSerializer,Xe as defineSystem,Ke as deleteWorld,be as enterQuery,ce as entityExists,Se as exitQuery,ae as getEntityComponents,We as getWorldComponents,Le as hasComponent,R as parentArray,Ze as pipe,Ie as registerComponent,Ne as registerComponents,$e as removeComponent,ie as removeEntity,je as removeQuery,Te as resetChangedQuery,He as resetWorld,re as setDefaultSize};export default null;
-//# sourceMappingURL=/bitecs.map
+// src/Constants.js
+var TYPES_ENUM = {
+  i8: "i8",
+  ui8: "ui8",
+  ui8c: "ui8c",
+  i16: "i16",
+  ui16: "ui16",
+  i32: "i32",
+  ui32: "ui32",
+  f32: "f32",
+  f64: "f64",
+  eid: "eid"
+};
+var TYPES_NAMES = {
+  i8: "Int8",
+  ui8: "Uint8",
+  ui8c: "Uint8Clamped",
+  i16: "Int16",
+  ui16: "Uint16",
+  i32: "Int32",
+  ui32: "Uint32",
+  eid: "Uint32",
+  f32: "Float32",
+  f64: "Float64"
+};
+var TYPES = {
+  i8: Int8Array,
+  ui8: Uint8Array,
+  ui8c: Uint8ClampedArray,
+  i16: Int16Array,
+  ui16: Uint16Array,
+  i32: Int32Array,
+  ui32: Uint32Array,
+  f32: Float32Array,
+  f64: Float64Array,
+  eid: Uint32Array
+};
+var UNSIGNED_MAX = {
+  uint8: 2 ** 8,
+  uint16: 2 ** 16,
+  uint32: 2 ** 32
+};
+
+// src/Storage.js
+var roundToMultiple = (mul) => (x) => Math.ceil(x / mul) * mul;
+var roundToMultiple4 = roundToMultiple(4);
+var $storeRef = Symbol("storeRef");
+var $storeSize = Symbol("storeSize");
+var $storeMaps = Symbol("storeMaps");
+var $storeFlattened = Symbol("storeFlattened");
+var $storeBase = Symbol("storeBase");
+var $storeType = Symbol("storeType");
+var $storeArrayElementCounts = Symbol("storeArrayElementCounts");
+var $storeSubarrays = Symbol("storeSubarrays");
+var $subarrayCursors = Symbol("subarrayCursors");
+var $subarray = Symbol("subarray");
+var $subarrayFrom = Symbol("subarrayFrom");
+var $subarrayTo = Symbol("subarrayTo");
+var $parentArray = Symbol("parentArray");
+var $tagStore = Symbol("tagStore");
+var $queryShadow = Symbol("queryShadow");
+var $serializeShadow = Symbol("serializeShadow");
+var $indexType = Symbol("indexType");
+var $indexBytes = Symbol("indexBytes");
+var $isEidType = Symbol("isEidType");
+var stores = {};
+var resize = (ta, size) => {
+  const newBuffer = new ArrayBuffer(size * ta.BYTES_PER_ELEMENT);
+  const newTa = new ta.constructor(newBuffer);
+  newTa.set(ta, 0);
+  return newTa;
+};
+var createShadow = (store, key) => {
+  if (!ArrayBuffer.isView(store)) {
+    const shadowStore = store[$parentArray].slice(0);
+    store[key] = store.map((_, eid) => {
+      const { length } = store[eid];
+      const start = length * eid;
+      const end = start + length;
+      return shadowStore.subarray(start, end);
+    });
+  } else {
+    store[key] = store.slice(0);
+  }
+};
+var resizeSubarray = (metadata, store, storeSize) => {
+  const cursors = metadata[$subarrayCursors];
+  let type = store[$storeType];
+  const length = store[0].length;
+  const indexType = length <= UNSIGNED_MAX.uint8 ? TYPES_ENUM.ui8 : length <= UNSIGNED_MAX.uint16 ? TYPES_ENUM.ui16 : TYPES_ENUM.ui32;
+  if (cursors[type] === 0) {
+    const arrayElementCount = metadata[$storeArrayElementCounts][type];
+    const array = new TYPES[type](roundToMultiple4(arrayElementCount * storeSize));
+    array.set(metadata[$storeSubarrays][type]);
+    metadata[$storeSubarrays][type] = array;
+    array[$indexType] = TYPES_NAMES[indexType];
+    array[$indexBytes] = TYPES[indexType].BYTES_PER_ELEMENT;
+  }
+  const start = cursors[type];
+  const end = start + storeSize * length;
+  cursors[type] = end;
+  store[$parentArray] = metadata[$storeSubarrays][type].subarray(start, end);
+  for (let eid = 0; eid < storeSize; eid++) {
+    const start2 = length * eid;
+    const end2 = start2 + length;
+    store[eid] = store[$parentArray].subarray(start2, end2);
+    store[eid][$indexType] = TYPES_NAMES[indexType];
+    store[eid][$indexBytes] = TYPES[indexType].BYTES_PER_ELEMENT;
+    store[eid][$subarray] = true;
+  }
+};
+var resizeRecursive = (metadata, store, size) => {
+  Object.keys(store).forEach((key) => {
+    const ta = store[key];
+    if (Array.isArray(ta)) {
+      resizeSubarray(metadata, ta, size);
+      store[$storeFlattened].push(ta);
+    } else if (ArrayBuffer.isView(ta)) {
+      store[key] = resize(ta, size);
+      store[$storeFlattened].push(store[key]);
+    } else if (typeof ta === "object") {
+      resizeRecursive(metadata, store[key], size);
+    }
+  });
+};
+var resizeStore = (store, size) => {
+  if (store[$tagStore])
+    return;
+  store[$storeSize] = size;
+  store[$storeFlattened].length = 0;
+  Object.keys(store[$subarrayCursors]).forEach((k) => {
+    store[$subarrayCursors][k] = 0;
+  });
+  resizeRecursive(store, store, size);
+};
+var resetStoreFor = (store, eid) => {
+  if (store[$storeFlattened]) {
+    store[$storeFlattened].forEach((ta) => {
+      if (ArrayBuffer.isView(ta))
+        ta[eid] = 0;
+      else
+        ta[eid].fill(0);
+    });
+  }
+};
+var createTypeStore = (type, length) => {
+  const totalBytes = length * TYPES[type].BYTES_PER_ELEMENT;
+  const buffer = new ArrayBuffer(totalBytes);
+  const store = new TYPES[type](buffer);
+  store[$isEidType] = type === TYPES_ENUM.eid;
+  return store;
+};
+var parentArray = (store) => store[$parentArray];
+var createArrayStore = (metadata, type, length) => {
+  const storeSize = metadata[$storeSize];
+  const store = Array(storeSize).fill(0);
+  store[$storeType] = type;
+  store[$isEidType] = type === TYPES_ENUM.eid;
+  const cursors = metadata[$subarrayCursors];
+  const indexType = length <= UNSIGNED_MAX.uint8 ? TYPES_ENUM.ui8 : length <= UNSIGNED_MAX.uint16 ? TYPES_ENUM.ui16 : TYPES_ENUM.ui32;
+  if (!length)
+    throw new Error("bitECS - Must define component array length");
+  if (!TYPES[type])
+    throw new Error(`bitECS - Invalid component array property type ${type}`);
+  if (!metadata[$storeSubarrays][type]) {
+    const arrayElementCount = metadata[$storeArrayElementCounts][type];
+    const array = new TYPES[type](roundToMultiple4(arrayElementCount * storeSize));
+    array[$indexType] = TYPES_NAMES[indexType];
+    array[$indexBytes] = TYPES[indexType].BYTES_PER_ELEMENT;
+    metadata[$storeSubarrays][type] = array;
+  }
+  const start = cursors[type];
+  const end = start + storeSize * length;
+  cursors[type] = end;
+  store[$parentArray] = metadata[$storeSubarrays][type].subarray(start, end);
+  for (let eid = 0; eid < storeSize; eid++) {
+    const start2 = length * eid;
+    const end2 = start2 + length;
+    store[eid] = store[$parentArray].subarray(start2, end2);
+    store[eid][$indexType] = TYPES_NAMES[indexType];
+    store[eid][$indexBytes] = TYPES[indexType].BYTES_PER_ELEMENT;
+    store[eid][$subarray] = true;
+  }
+  return store;
+};
+var isArrayType = (x) => Array.isArray(x) && typeof x[0] === "string" && typeof x[1] === "number";
+var createStore = (schema, size) => {
+  const $store = Symbol("store");
+  if (!schema || !Object.keys(schema).length) {
+    stores[$store] = {
+      [$storeSize]: size,
+      [$tagStore]: true,
+      [$storeBase]: () => stores[$store]
+    };
+    return stores[$store];
+  }
+  schema = JSON.parse(JSON.stringify(schema));
+  const arrayElementCounts = {};
+  const collectArrayElementCounts = (s) => {
+    const keys = Object.keys(s);
+    for (const k of keys) {
+      if (isArrayType(s[k])) {
+        if (!arrayElementCounts[s[k][0]])
+          arrayElementCounts[s[k][0]] = 0;
+        arrayElementCounts[s[k][0]] += s[k][1];
+      } else if (s[k] instanceof Object) {
+        collectArrayElementCounts(s[k]);
+      }
+    }
+  };
+  collectArrayElementCounts(schema);
+  const metadata = {
+    [$storeSize]: size,
+    [$storeMaps]: {},
+    [$storeSubarrays]: {},
+    [$storeRef]: $store,
+    [$subarrayCursors]: Object.keys(TYPES).reduce((a, type) => ({ ...a, [type]: 0 }), {}),
+    [$storeFlattened]: [],
+    [$storeArrayElementCounts]: arrayElementCounts
+  };
+  if (schema instanceof Object && Object.keys(schema).length) {
+    const recursiveTransform = (a, k) => {
+      if (typeof a[k] === "string") {
+        a[k] = createTypeStore(a[k], size);
+        a[k][$storeBase] = () => stores[$store];
+        metadata[$storeFlattened].push(a[k]);
+      } else if (isArrayType(a[k])) {
+        const [type, length] = a[k];
+        a[k] = createArrayStore(metadata, type, length);
+        a[k][$storeBase] = () => stores[$store];
+        metadata[$storeFlattened].push(a[k]);
+      } else if (a[k] instanceof Object) {
+        a[k] = Object.keys(a[k]).reduce(recursiveTransform, a[k]);
+      }
+      return a;
+    };
+    stores[$store] = Object.assign(Object.keys(schema).reduce(recursiveTransform, schema), metadata);
+    stores[$store][$storeBase] = () => stores[$store];
+    return stores[$store];
+  }
+};
+
+// src/Util.js
+var SparseSet = () => {
+  const dense = [];
+  const sparse = [];
+  dense.sort = function(comparator) {
+    const result = Array.prototype.sort.call(this, comparator);
+    for (let i = 0; i < dense.length; i++) {
+      sparse[dense[i]] = i;
+    }
+    return result;
+  };
+  const has = (val) => dense[sparse[val]] === val;
+  const add = (val) => {
+    if (has(val))
+      return;
+    sparse[val] = dense.push(val) - 1;
+  };
+  const remove = (val) => {
+    if (!has(val))
+      return;
+    const index = sparse[val];
+    const swapped = dense.pop();
+    if (swapped !== val) {
+      dense[index] = swapped;
+      sparse[swapped] = index;
+    }
+  };
+  return {
+    add,
+    remove,
+    has,
+    sparse,
+    dense
+  };
+};
+
+// src/Serialize.js
+var DESERIALIZE_MODE = {
+  REPLACE: 0,
+  APPEND: 1,
+  MAP: 2
+};
+var resized = false;
+var setSerializationResized = (v) => {
+  resized = v;
+};
+var concat = (a, v) => a.concat(v);
+var not = (fn) => (v) => !fn(v);
+var storeFlattened = (c) => c[$storeFlattened];
+var isFullComponent = storeFlattened;
+var isProperty = not(isFullComponent);
+var isModifier = (c) => typeof c === "function" && c[$modifier];
+var isNotModifier = not(isModifier);
+var isChangedModifier = (c) => isModifier(c) && c()[1] === "changed";
+var isWorld = (w) => Object.getOwnPropertySymbols(w).includes($componentMap);
+var fromModifierToComponent = (c) => c()[0];
+var canonicalize = (target) => {
+  if (isWorld(target))
+    return [[], /* @__PURE__ */ new Map()];
+  const fullComponentProps = target.filter(isNotModifier).filter(isFullComponent).map(storeFlattened).reduce(concat, []);
+  const changedComponentProps = target.filter(isChangedModifier).map(fromModifierToComponent).filter(isFullComponent).map(storeFlattened).reduce(concat, []);
+  const props = target.filter(isNotModifier).filter(isProperty);
+  const changedProps = target.filter(isChangedModifier).map(fromModifierToComponent).filter(isProperty);
+  const componentProps = [...fullComponentProps, ...props, ...changedComponentProps, ...changedProps];
+  const allChangedProps = [...changedComponentProps, ...changedProps].reduce((map, prop) => {
+    const $ = Symbol();
+    createShadow(prop, $);
+    map.set(prop, $);
+    return map;
+  }, /* @__PURE__ */ new Map());
+  return [componentProps, allChangedProps];
+};
+var defineSerializer = (target, maxBytes = 2e7) => {
+  const worldSerializer = isWorld(target);
+  let [componentProps, changedProps] = canonicalize(target);
+  const buffer = new ArrayBuffer(maxBytes);
+  const view = new DataView(buffer);
+  const entityComponentCache = /* @__PURE__ */ new Map();
+  return (ents) => {
+    if (resized) {
+      [componentProps, changedProps] = canonicalize(target);
+      resized = false;
+    }
+    if (worldSerializer) {
+      componentProps = [];
+      target[$componentMap].forEach((c, component) => {
+        if (component[$storeFlattened])
+          componentProps.push(...component[$storeFlattened]);
+        else
+          componentProps.push(component);
+      });
+    }
+    let world;
+    if (Object.getOwnPropertySymbols(ents).includes($componentMap)) {
+      world = ents;
+      ents = ents[$entityArray];
+    } else {
+      world = eidToWorld.get(ents[0]);
+    }
+    let where = 0;
+    if (!ents.length)
+      return buffer.slice(0, where);
+    const cache = /* @__PURE__ */ new Map();
+    for (let pid = 0; pid < componentProps.length; pid++) {
+      const prop = componentProps[pid];
+      const component = prop[$storeBase]();
+      const $diff = changedProps.get(prop);
+      const shadow = $diff ? prop[$diff] : null;
+      if (!cache.has(component))
+        cache.set(component, /* @__PURE__ */ new Map());
+      view.setUint8(where, pid);
+      where += 1;
+      const countWhere = where;
+      where += 4;
+      let writeCount = 0;
+      for (let i = 0; i < ents.length; i++) {
+        const eid = ents[i];
+        let componentCache = entityComponentCache.get(eid);
+        if (!componentCache)
+          componentCache = entityComponentCache.set(eid, /* @__PURE__ */ new Set()).get(eid);
+        componentCache.add(eid);
+        const newlyAddedComponent = shadow && cache.get(component).get(eid) || !componentCache.has(component) && hasComponent(world, component, eid);
+        cache.get(component).set(eid, newlyAddedComponent);
+        if (newlyAddedComponent) {
+          componentCache.add(component);
+        } else if (!hasComponent(world, component, eid)) {
+          componentCache.delete(component);
+          continue;
+        }
+        const rewindWhere = where;
+        view.setUint32(where, eid);
+        where += 4;
+        if (prop[$tagStore]) {
+          writeCount++;
+          continue;
+        }
+        if (ArrayBuffer.isView(prop[eid])) {
+          const type = prop[eid].constructor.name.replace("Array", "");
+          const indexType = prop[eid][$indexType];
+          const indexBytes = prop[eid][$indexBytes];
+          const countWhere2 = where;
+          where += indexBytes;
+          let arrayWriteCount = 0;
+          for (let i2 = 0; i2 < prop[eid].length; i2++) {
+            if (shadow) {
+              const changed = shadow[eid][i2] !== prop[eid][i2];
+              shadow[eid][i2] = prop[eid][i2];
+              if (!changed && !newlyAddedComponent) {
+                continue;
+              }
+            }
+            view[`set${indexType}`](where, i2);
+            where += indexBytes;
+            const value = prop[eid][i2];
+            view[`set${type}`](where, value);
+            where += prop[eid].BYTES_PER_ELEMENT;
+            arrayWriteCount++;
+          }
+          if (arrayWriteCount > 0) {
+            view[`set${indexType}`](countWhere2, arrayWriteCount);
+            writeCount++;
+          } else {
+            where = rewindWhere;
+            continue;
+          }
+        } else {
+          if (shadow) {
+            const changed = shadow[eid] !== prop[eid];
+            shadow[eid] = prop[eid];
+            if (!changed && !newlyAddedComponent) {
+              where = rewindWhere;
+              continue;
+            }
+          }
+          const type = prop.constructor.name.replace("Array", "");
+          view[`set${type}`](where, prop[eid]);
+          where += prop.BYTES_PER_ELEMENT;
+          writeCount++;
+        }
+      }
+      if (writeCount > 0) {
+        view.setUint32(countWhere, writeCount);
+      } else {
+        where -= 5;
+      }
+    }
+    return buffer.slice(0, where);
+  };
+};
+var newEntities = /* @__PURE__ */ new Map();
+var defineDeserializer = (target) => {
+  const isWorld2 = Object.getOwnPropertySymbols(target).includes($componentMap);
+  let [componentProps] = canonicalize(target);
+  const deserializedEntities = /* @__PURE__ */ new Set();
+  return (world, packet, mode = 0) => {
+    newEntities.clear();
+    if (resized) {
+      [componentProps] = canonicalize(target);
+      resized = false;
+    }
+    if (isWorld2) {
+      componentProps = [];
+      target[$componentMap].forEach((c, component) => {
+        if (component[$storeFlattened])
+          componentProps.push(...component[$storeFlattened]);
+        else
+          componentProps.push(component);
+      });
+    }
+    const localEntities = world[$localEntities];
+    const localEntityLookup = world[$localEntityLookup];
+    const view = new DataView(packet);
+    let where = 0;
+    while (where < packet.byteLength) {
+      const pid = view.getUint8(where);
+      where += 1;
+      const entityCount = view.getUint32(where);
+      where += 4;
+      const prop = componentProps[pid];
+      for (let i = 0; i < entityCount; i++) {
+        let eid = view.getUint32(where);
+        where += 4;
+        if (mode === DESERIALIZE_MODE.MAP) {
+          if (localEntities.has(eid)) {
+            eid = localEntities.get(eid);
+          } else if (newEntities.has(eid)) {
+            eid = newEntities.get(eid);
+          } else {
+            const newEid = addEntity(world);
+            localEntities.set(eid, newEid);
+            localEntityLookup.set(newEid, eid);
+            newEntities.set(eid, newEid);
+            eid = newEid;
+          }
+        }
+        if (mode === DESERIALIZE_MODE.APPEND || mode === DESERIALIZE_MODE.REPLACE && !world[$entitySparseSet].has(eid)) {
+          const newEid = newEntities.get(eid) || addEntity(world);
+          newEntities.set(eid, newEid);
+          eid = newEid;
+        }
+        const component = prop[$storeBase]();
+        if (!hasComponent(world, component, eid)) {
+          addComponent(world, component, eid);
+        }
+        deserializedEntities.add(eid);
+        if (component[$tagStore]) {
+          continue;
+        }
+        if (ArrayBuffer.isView(prop[eid])) {
+          const array = prop[eid];
+          const count = view[`get${array[$indexType]}`](where);
+          where += array[$indexBytes];
+          for (let i2 = 0; i2 < count; i2++) {
+            const index = view[`get${array[$indexType]}`](where);
+            where += array[$indexBytes];
+            const value = view[`get${array.constructor.name.replace("Array", "")}`](where);
+            where += array.BYTES_PER_ELEMENT;
+            if (prop[$isEidType]) {
+              let localEid;
+              if (localEntities.has(value)) {
+                localEid = localEntities.get(value);
+              } else if (newEntities.has(value)) {
+                localEid = newEntities.get(value);
+              } else {
+                const newEid = addEntity(world);
+                localEntities.set(value, newEid);
+                localEntityLookup.set(newEid, value);
+                newEntities.set(value, newEid);
+                localEid = newEid;
+              }
+              prop[eid][index] = localEid;
+            } else
+              prop[eid][index] = value;
+          }
+        } else {
+          const value = view[`get${prop.constructor.name.replace("Array", "")}`](where);
+          where += prop.BYTES_PER_ELEMENT;
+          if (prop[$isEidType]) {
+            let localEid;
+            if (localEntities.has(value)) {
+              localEid = localEntities.get(value);
+            } else if (newEntities.has(value)) {
+              localEid = newEntities.get(value);
+            } else {
+              const newEid = addEntity(world);
+              localEntities.set(value, newEid);
+              localEntityLookup.set(newEid, value);
+              newEntities.set(value, newEid);
+              localEid = newEid;
+            }
+            prop[eid] = localEid;
+          } else
+            prop[eid] = value;
+        }
+      }
+    }
+    const ents = Array.from(deserializedEntities);
+    deserializedEntities.clear();
+    return ents;
+  };
+};
+
+// src/Entity.js
+var $entityMasks = Symbol("entityMasks");
+var $entityComponents = Symbol("entityComponents");
+var $entitySparseSet = Symbol("entitySparseSet");
+var $entityArray = Symbol("entityArray");
+var $entityIndices = Symbol("entityIndices");
+var $removedEntities = Symbol("removedEntities");
+var defaultSize = 1e5;
+var globalEntityCursor = 0;
+var globalSize = defaultSize;
+var getGlobalSize = () => globalSize;
+var removed = [];
+var recycled = [];
+var defaultRemovedReuseThreshold = 0.01;
+var removedReuseThreshold = defaultRemovedReuseThreshold;
+var resetGlobals = () => {
+  globalSize = defaultSize;
+  globalEntityCursor = 0;
+  removedReuseThreshold = defaultRemovedReuseThreshold;
+  removed.length = 0;
+  recycled.length = 0;
+};
+var setDefaultSize = (newSize) => {
+  const oldSize = globalSize;
+  defaultSize = newSize;
+  resetGlobals();
+  globalSize = newSize;
+  resizeWorlds(newSize);
+  resizeComponents(newSize);
+  setSerializationResized(true);
+  console.info(`\u{1F47E} bitECS - resizing all data stores from ${oldSize} to ${newSize}`);
+};
+var setRemovedRecycleThreshold = (newThreshold) => {
+  removedReuseThreshold = newThreshold;
+};
+var getEntityCursor = () => globalEntityCursor;
+var eidToWorld = /* @__PURE__ */ new Map();
+var flushRemovedEntities = (world) => {
+  if (!world[$manualEntityRecycling]) {
+    throw new Error("bitECS - cannot flush removed entities, enable feature with the enableManualEntityRecycling function");
+  }
+  removed.push(...recycled);
+  recycled.length = 0;
+};
+var addEntity = (world) => {
+  const eid = world[$manualEntityRecycling] ? removed.length ? removed.shift() : globalEntityCursor++ : removed.length > Math.round(defaultSize * defaultRemovedReuseThreshold) ? removed.shift() : globalEntityCursor++;
+  if (eid > world[$size]) {
+    throw new Error("bitECS - max entities reached");
+  }
+  world[$entitySparseSet].add(eid);
+  eidToWorld.set(eid, world);
+  world[$notQueries].forEach((q) => {
+    const match = queryCheckEntity(world, q, eid);
+    if (match)
+      queryAddEntity(q, eid);
+  });
+  world[$entityComponents].set(eid, /* @__PURE__ */ new Set());
+  return eid;
+};
+var removeEntity = (world, eid) => {
+  if (!world[$entitySparseSet].has(eid))
+    return;
+  world[$queries].forEach((q) => {
+    queryRemoveEntity(world, q, eid);
+  });
+  if (world[$manualEntityRecycling])
+    recycled.push(eid);
+  else
+    removed.push(eid);
+  world[$entitySparseSet].remove(eid);
+  world[$entityComponents].delete(eid);
+  world[$localEntities].delete(world[$localEntityLookup].get(eid));
+  world[$localEntityLookup].delete(eid);
+  for (let i = 0; i < world[$entityMasks].length; i++)
+    world[$entityMasks][i][eid] = 0;
+};
+var getEntityComponents = (world, eid) => {
+  if (eid === void 0)
+    throw new Error("bitECS - entity is undefined.");
+  if (!world[$entitySparseSet].has(eid))
+    throw new Error("bitECS - entity does not exist in the world.");
+  return Array.from(world[$entityComponents].get(eid));
+};
+var entityExists = (world, eid) => world[$entitySparseSet].has(eid);
+
+// src/Query.js
+var $modifier = Symbol("$modifier");
+function modifier(c, mod) {
+  const inner = () => [c, mod];
+  inner[$modifier] = true;
+  return inner;
+}
+var Not = (c) => modifier(c, "not");
+var Changed = (c) => modifier(c, "changed");
+function Any(...comps) {
+  return function QueryAny() {
+    return comps;
+  };
+}
+function All(...comps) {
+  return function QueryAll() {
+    return comps;
+  };
+}
+function None(...comps) {
+  return function QueryNone() {
+    return comps;
+  };
+}
+var $queries = Symbol("queries");
+var $notQueries = Symbol("notQueries");
+var $queryAny = Symbol("queryAny");
+var $queryAll = Symbol("queryAll");
+var $queryNone = Symbol("queryNone");
+var $queryMap = Symbol("queryMap");
+var $dirtyQueries = Symbol("$dirtyQueries");
+var $queryComponents = Symbol("queryComponents");
+var $enterQuery = Symbol("enterQuery");
+var $exitQuery = Symbol("exitQuery");
+var enterQuery = (query) => (world) => {
+  if (!world[$queryMap].has(query))
+    registerQuery(world, query);
+  const q = world[$queryMap].get(query);
+  const entered = q.entered.dense.slice();
+  q.entered = SparseSet();
+  return entered;
+};
+var exitQuery = (query) => (world) => {
+  if (!world[$queryMap].has(query))
+    registerQuery(world, query);
+  const q = world[$queryMap].get(query);
+  const exited = q.exited.dense.slice();
+  q.exited = SparseSet();
+  return exited;
+};
+var registerQuery = (world, query) => {
+  const components2 = [];
+  const notComponents = [];
+  const changedComponents = [];
+  query[$queryComponents].forEach((c) => {
+    if (typeof c === "function" && c[$modifier]) {
+      const [comp, mod] = c();
+      if (!world[$componentMap].has(comp))
+        registerComponent(world, comp);
+      if (mod === "not") {
+        notComponents.push(comp);
+      }
+      if (mod === "changed") {
+        changedComponents.push(comp);
+        components2.push(comp);
+      }
+    } else {
+      if (!world[$componentMap].has(c))
+        registerComponent(world, c);
+      components2.push(c);
+    }
+  });
+  const mapComponents = (c) => world[$componentMap].get(c);
+  const allComponents = components2.concat(notComponents).map(mapComponents);
+  const sparseSet = SparseSet();
+  const archetypes = [];
+  const changed = [];
+  const toRemove = SparseSet();
+  const entered = SparseSet();
+  const exited = SparseSet();
+  const generations = allComponents.map((c) => c.generationId).reduce((a, v) => {
+    if (a.includes(v))
+      return a;
+    a.push(v);
+    return a;
+  }, []);
+  const reduceBitflags = (a, c) => {
+    if (!a[c.generationId])
+      a[c.generationId] = 0;
+    a[c.generationId] |= c.bitflag;
+    return a;
+  };
+  const masks = components2.map(mapComponents).reduce(reduceBitflags, {});
+  const notMasks = notComponents.map(mapComponents).reduce(reduceBitflags, {});
+  const hasMasks = allComponents.reduce(reduceBitflags, {});
+  const flatProps = components2.filter((c) => !c[$tagStore]).map((c) => Object.getOwnPropertySymbols(c).includes($storeFlattened) ? c[$storeFlattened] : [c]).reduce((a, v) => a.concat(v), []);
+  const shadows = [];
+  const q = Object.assign(sparseSet, {
+    archetypes,
+    changed,
+    components: components2,
+    notComponents,
+    changedComponents,
+    allComponents,
+    masks,
+    notMasks,
+    hasMasks,
+    generations,
+    flatProps,
+    toRemove,
+    entered,
+    exited,
+    shadows
+  });
+  world[$queryMap].set(query, q);
+  world[$queries].add(q);
+  allComponents.forEach((c) => {
+    c.queries.add(q);
+  });
+  if (notComponents.length)
+    world[$notQueries].add(q);
+  for (let eid = 0; eid < getEntityCursor(); eid++) {
+    if (!world[$entitySparseSet].has(eid))
+      continue;
+    const match = queryCheckEntity(world, q, eid);
+    if (match)
+      queryAddEntity(q, eid);
+  }
+};
+var generateShadow = (q, pid) => {
+  const $ = Symbol();
+  const prop = q.flatProps[pid];
+  createShadow(prop, $);
+  q.shadows[pid] = prop[$];
+  return prop[$];
+};
+var diff = (q, clearDiff) => {
+  if (clearDiff)
+    q.changed = [];
+  const { flatProps, shadows } = q;
+  for (let i = 0; i < q.dense.length; i++) {
+    const eid = q.dense[i];
+    let dirty = false;
+    for (let pid = 0; pid < flatProps.length; pid++) {
+      const prop = flatProps[pid];
+      const shadow = shadows[pid] || generateShadow(q, pid);
+      if (ArrayBuffer.isView(prop[eid])) {
+        for (let i2 = 0; i2 < prop[eid].length; i2++) {
+          if (prop[eid][i2] !== shadow[eid][i2]) {
+            dirty = true;
+            break;
+          }
+        }
+        shadow[eid].set(prop[eid]);
+      } else {
+        if (prop[eid] !== shadow[eid]) {
+          dirty = true;
+          shadow[eid] = prop[eid];
+        }
+      }
+    }
+    if (dirty)
+      q.changed.push(eid);
+  }
+  return q.changed;
+};
+var flatten = (a, v) => a.concat(v);
+var aggregateComponentsFor = (mod) => (x) => x.filter((f) => f.name === mod().constructor.name).reduce(flatten);
+var getAnyComponents = aggregateComponentsFor(Any);
+var getAllComponents = aggregateComponentsFor(All);
+var getNoneComponents = aggregateComponentsFor(None);
+var defineQuery = (...args) => {
+  let components2;
+  let any, all, none;
+  if (Array.isArray(args[0])) {
+    components2 = args[0];
+  } else {
+  }
+  if (components2 === void 0 || components2[$componentMap] !== void 0) {
+    return (world) => world ? world[$entityArray] : components2[$entityArray];
+  }
+  const query = function(world, clearDiff = true) {
+    if (!world[$queryMap].has(query))
+      registerQuery(world, query);
+    const q = world[$queryMap].get(query);
+    commitRemovals(world);
+    if (q.changedComponents.length)
+      return diff(q, clearDiff);
+    return q.dense;
+  };
+  query[$queryComponents] = components2;
+  query[$queryAny] = any;
+  query[$queryAll] = all;
+  query[$queryNone] = none;
+  return query;
+};
+var queryCheckEntity = (world, q, eid) => {
+  const { masks, notMasks, generations } = q;
+  let or = 0;
+  for (let i = 0; i < generations.length; i++) {
+    const generationId = generations[i];
+    const qMask = masks[generationId];
+    const qNotMask = notMasks[generationId];
+    const eMask = world[$entityMasks][generationId][eid];
+    if (qNotMask && (eMask & qNotMask) !== 0) {
+      return false;
+    }
+    if (qMask && (eMask & qMask) !== qMask) {
+      return false;
+    }
+  }
+  return true;
+};
+var queryAddEntity = (q, eid) => {
+  q.toRemove.remove(eid);
+  q.entered.add(eid);
+  q.add(eid);
+};
+var queryCommitRemovals = (q) => {
+  for (let i = q.toRemove.dense.length - 1; i >= 0; i--) {
+    const eid = q.toRemove.dense[i];
+    q.toRemove.remove(eid);
+    q.remove(eid);
+  }
+};
+var commitRemovals = (world) => {
+  if (!world[$dirtyQueries].size)
+    return;
+  world[$dirtyQueries].forEach(queryCommitRemovals);
+  world[$dirtyQueries].clear();
+};
+var queryRemoveEntity = (world, q, eid) => {
+  if (!q.has(eid) || q.toRemove.has(eid))
+    return;
+  q.toRemove.add(eid);
+  world[$dirtyQueries].add(q);
+  q.exited.add(eid);
+};
+var resetChangedQuery = (world, query) => {
+  const q = world[$queryMap].get(query);
+  q.changed = [];
+};
+var removeQuery = (world, query) => {
+  const q = world[$queryMap].get(query);
+  world[$queries].delete(q);
+  world[$queryMap].delete(query);
+};
+
+// src/Component.js
+var $componentMap = Symbol("componentMap");
+var components = [];
+var resizeComponents = (size) => {
+  components.forEach((component) => resizeStore(component, size));
+};
+var defineComponent = (schema, size) => {
+  const component = createStore(schema, size || getGlobalSize());
+  if (schema && Object.keys(schema).length)
+    components.push(component);
+  return component;
+};
+var incrementBitflag = (world) => {
+  world[$bitflag] *= 2;
+  if (world[$bitflag] >= 2 ** 31) {
+    world[$bitflag] = 1;
+    world[$entityMasks].push(new Uint32Array(world[$size]));
+  }
+};
+var registerComponent = (world, component) => {
+  if (!component)
+    throw new Error(`bitECS - Cannot register null or undefined component`);
+  const queries = /* @__PURE__ */ new Set();
+  const notQueries = /* @__PURE__ */ new Set();
+  const changedQueries = /* @__PURE__ */ new Set();
+  world[$queries].forEach((q) => {
+    if (q.allComponents.includes(component)) {
+      queries.add(q);
+    }
+  });
+  world[$componentMap].set(component, {
+    generationId: world[$entityMasks].length - 1,
+    bitflag: world[$bitflag],
+    store: component,
+    queries,
+    notQueries,
+    changedQueries
+  });
+  incrementBitflag(world);
+};
+var registerComponents = (world, components2) => {
+  components2.forEach((c) => registerComponent(world, c));
+};
+var hasComponent = (world, component, eid) => {
+  const registeredComponent = world[$componentMap].get(component);
+  if (!registeredComponent)
+    return false;
+  const { generationId, bitflag } = registeredComponent;
+  const mask = world[$entityMasks][generationId][eid];
+  return (mask & bitflag) === bitflag;
+};
+var addComponent = (world, component, eid, reset = false) => {
+  if (eid === void 0)
+    throw new Error("bitECS - entity is undefined.");
+  if (!world[$entitySparseSet].has(eid))
+    throw new Error("bitECS - entity does not exist in the world.");
+  if (!world[$componentMap].has(component))
+    registerComponent(world, component);
+  if (hasComponent(world, component, eid))
+    return;
+  const c = world[$componentMap].get(component);
+  const { generationId, bitflag, queries, notQueries } = c;
+  world[$entityMasks][generationId][eid] |= bitflag;
+  queries.forEach((q) => {
+    q.toRemove.remove(eid);
+    const match = queryCheckEntity(world, q, eid);
+    if (match) {
+      q.exited.remove(eid);
+      queryAddEntity(q, eid);
+    }
+    if (!match) {
+      q.entered.remove(eid);
+      queryRemoveEntity(world, q, eid);
+    }
+  });
+  world[$entityComponents].get(eid).add(component);
+  if (reset)
+    resetStoreFor(component, eid);
+};
+var removeComponent = (world, component, eid, reset = true) => {
+  if (eid === void 0)
+    throw new Error("bitECS - entity is undefined.");
+  if (!world[$entitySparseSet].has(eid))
+    throw new Error("bitECS - entity does not exist in the world.");
+  if (!hasComponent(world, component, eid))
+    return;
+  const c = world[$componentMap].get(component);
+  const { generationId, bitflag, queries } = c;
+  world[$entityMasks][generationId][eid] &= ~bitflag;
+  queries.forEach((q) => {
+    q.toRemove.remove(eid);
+    const match = queryCheckEntity(world, q, eid);
+    if (match) {
+      q.exited.remove(eid);
+      queryAddEntity(q, eid);
+    }
+    if (!match) {
+      q.entered.remove(eid);
+      queryRemoveEntity(world, q, eid);
+    }
+  });
+  world[$entityComponents].get(eid).delete(component);
+  if (reset)
+    resetStoreFor(component, eid);
+};
+
+// src/World.js
+var $size = Symbol("size");
+var $resizeThreshold = Symbol("resizeThreshold");
+var $bitflag = Symbol("bitflag");
+var $archetypes = Symbol("archetypes");
+var $localEntities = Symbol("localEntities");
+var $localEntityLookup = Symbol("localEntityLookup");
+var $manualEntityRecycling = Symbol("manualEntityRecycling");
+var worlds = [];
+var resizeWorlds = (size) => {
+  worlds.forEach((world) => {
+    world[$size] = size;
+    for (let i = 0; i < world[$entityMasks].length; i++) {
+      const masks = world[$entityMasks][i];
+      world[$entityMasks][i] = resize(masks, size);
+    }
+    world[$resizeThreshold] = world[$size] - world[$size] / 5;
+  });
+};
+var createWorld = (...args) => {
+  const world = typeof args[0] === "object" ? args[0] : {};
+  const size = typeof args[0] === "number" ? args[0] : typeof args[1] === "number" ? args[1] : getGlobalSize();
+  resetWorld(world, size);
+  worlds.push(world);
+  return world;
+};
+var enableManualEntityRecycling = (world) => {
+  world[$manualEntityRecycling] = true;
+};
+var resetWorld = (world, size = getGlobalSize()) => {
+  world[$size] = size;
+  if (world[$entityArray])
+    world[$entityArray].forEach((eid) => removeEntity(world, eid));
+  world[$entityMasks] = [new Uint32Array(size)];
+  world[$entityComponents] = /* @__PURE__ */ new Map();
+  world[$archetypes] = [];
+  world[$entitySparseSet] = SparseSet();
+  world[$entityArray] = world[$entitySparseSet].dense;
+  world[$bitflag] = 1;
+  world[$componentMap] = /* @__PURE__ */ new Map();
+  world[$queryMap] = /* @__PURE__ */ new Map();
+  world[$queries] = /* @__PURE__ */ new Set();
+  world[$notQueries] = /* @__PURE__ */ new Set();
+  world[$dirtyQueries] = /* @__PURE__ */ new Set();
+  world[$localEntities] = /* @__PURE__ */ new Map();
+  world[$localEntityLookup] = /* @__PURE__ */ new Map();
+  world[$manualEntityRecycling] = false;
+  return world;
+};
+var deleteWorld = (world) => {
+  Object.getOwnPropertySymbols(world).forEach(($) => {
+    delete world[$];
+  });
+  Object.keys(world).forEach((key) => {
+    delete world[key];
+  });
+  worlds.splice(worlds.indexOf(world), 1);
+};
+var getWorldComponents = (world) => Array.from(world[$componentMap].keys());
+var getAllEntities = (world) => world[$entitySparseSet].dense.slice(0);
+
+// src/System.js
+var defineSystem = (update) => (world, ...args) => {
+  update(world, ...args);
+  return world;
+};
+
+// src/index.js
+var pipe = (...fns) => (input) => {
+  let tmp = input;
+  for (let i = 0; i < fns.length; i++) {
+    const fn = fns[i];
+    tmp = fn(tmp);
+  }
+  return tmp;
+};
+var Types = TYPES_ENUM;
+export {
+  Changed,
+  DESERIALIZE_MODE,
+  Not,
+  Types,
+  addComponent,
+  addEntity,
+  commitRemovals,
+  createWorld,
+  defineComponent,
+  defineDeserializer,
+  defineQuery,
+  defineSerializer,
+  defineSystem,
+  deleteWorld,
+  enableManualEntityRecycling,
+  enterQuery,
+  entityExists,
+  exitQuery,
+  flushRemovedEntities,
+  getAllEntities,
+  getEntityComponents,
+  getWorldComponents,
+  hasComponent,
+  parentArray,
+  pipe,
+  registerComponent,
+  registerComponents,
+  removeComponent,
+  removeEntity,
+  removeQuery,
+  resetChangedQuery,
+  resetGlobals,
+  resetWorld,
+  setDefaultSize,
+  setRemovedRecycleThreshold
+};
+//# sourceMappingURL=bitecs.js.map

@@ -17,7 +17,7 @@ export const physicsSystem = defineSystem((world) => {
     if (Position.x[id] < 0 || Position.x[id] >= 400) {
       Velocity.x[id] *= -1;
     }
-    if (Position.y[id] < 0 || Position.y[id] >= 400) {
+    if (Position.y[id] < 0 || Position.y[id] >= 300) {
       Velocity.y[id] *= -1;
     }
 
