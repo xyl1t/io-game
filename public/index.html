@@ -17,6 +17,8 @@
       content="black-translucent"
     />
 
+    <link rel="manifest" href="manifest.json" />
+
     <link rel="icon" type="image/x-icon" href="/assets/favicon.ico" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -35,8 +37,13 @@
       <div id="gameContainer">
         <canvas id="canvas" oncontextmenu="return false;"></canvas>
       </div>
+
       <div id="startPageContainer">
-        <button type="button" id="btnJoin">Join</button>
+        <div id="titleItem">
+          <h1>Sasma.io</h1>
+          <input type="text" name="playerName" id="input" />
+          <button type="button" id="btnJoin">Join</button>
+        </div>
       </div>
     </div>
   </body>

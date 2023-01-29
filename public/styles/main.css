@@ -2,37 +2,77 @@
   font-family: "Roboto", sans-serif, "Arial";
 }
 
-html,
-body,
-div,
-canvas {
-  margin: 0px;
+body {
   padding: 0px;
+  margin: 0px;
+}
+canvas {
+  display: block;
+  padding: 0px;
+  margin: 0px;
 }
 
-/* body { */
-/*   overflow: hidden; */
-/* } */
-
-/* canvas { */
-/*   display: block; */
-/* } */
-
 #container {
-  position: relative;
+  display: grid;
+}
+
+#gameContainer,
+#startPageContainer {
+  grid-area: 1 / 1;
 }
 
 #gameContainer {
-  position: absolute;
-  z-index:1;
   filter: brightness(50%);
 }
 
 #startPageContainer {
-  position: absolute;
-  z-index:2;
+  height: 100vh;
+  /* for safari because 100vh doesn't work right */
+  /* min-height: -webkit-fill-available; */
+  z-index: 10;
+  /* background-color: red; */
+
+  display: grid;
+  grid-template-areas:
+    "title"
+    "footer";
+  grid-template-rows: 1fr 64px;
+  gap: 10px;
 }
 
-/* body { */
-/*   overflow: hidden; */
-/* } */
+#startPageContainer > div {
+  /* background-color: rgba(255, 255, 255, 0.8); */
+  padding: 20px 0;
+  /* display: flex; */
+  /* justify-content: center; */
+  /* align-items: center; */
+  text-align: center;
+
+  /* place-self: center; */
+}
+
+#titleItem input, button{
+  font-size: 1em;
+}
+
+#titleItem {
+  grid-area: title;
+}
+
+#inputItem {
+  grid-area: name-input;
+}
+
+#titleItem h1 {
+  color: white;
+  padding-top: 64px;
+}
+
+#joinItem {
+  grid-area: join-button;
+}
+
+#aboutFooterItem {
+  grid-area: footer;
+}
+
