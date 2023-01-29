@@ -9,7 +9,7 @@ export const renderingSystem = defineSystem((world) => {
   const { canvas, ctx, images } = world;
   ctx.save();
   // ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = "white";
+  ctx.fillStyle = "lightgray";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   const renderAbleEntities = query(world);

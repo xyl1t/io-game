@@ -10,12 +10,27 @@ canvas {
   padding: 0px;
 }
 
-body {
-  overflow: hidden;
+/* body { */
+/*   overflow: hidden; */
+/* } */
+
+/* canvas { */
+/*   display: block; */
+/* } */
+
+#container {
+  position: relative;
 }
 
-canvas {
-  display: block;
+#gameContainer {
+  position: absolute;
+  z-index:1;
+  filter: brightness(50%);
+}
+
+#startPageContainer {
+  position: absolute;
+  z-index:2;
 }
 
 /* body { */

@@ -1,11 +1,6 @@
 import { renderingSystem } from "/systems/RenderingSystem.js";
 import {
   setup,
-  setupWorldParameters,
-  loadImages,
-  setupCanvas,
-  setupEvents,
-  setupConnection,
 } from "./setup.js";
 
 $(async () => {
