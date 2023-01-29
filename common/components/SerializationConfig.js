@@ -10,9 +10,9 @@ import { Map } from "./Map.js";
 export const serializationConfig = [
   Map,
   Me,
-  Input,
+  Player,
   Position,
+  Input,
   Sprite,
   Velocity,
-  Player,
 ];

@@ -6,7 +6,7 @@ export async function setupEvents() {
   world.canvas.addEventListener("mouseup", mouseup, false);
   world.canvas.addEventListener("mouseleave", mouseleave, false);
   world.canvas.addEventListener("mousemove", mousemove, false);
-  // world.canvas.addEventListener("wheel", wheel, false);
+  world.canvas.addEventListener("wheel", wheel, false);
   window.addEventListener("keydown", keydown, true);
   window.addEventListener("keyup", keyup, true);
   $("#btnJoin").click(btnJoinClick);
@@ -47,6 +47,7 @@ function mousemove(e) {
   world.mouse.y = e.pageY - world.canvas.offsetTop;
   const dx = world.mouse.x - world.windowWidth / 2;
   const dy = world.mouse.y - world.windowHeight / 2;
+  world.mouse.oldAngle = world.mouse.angle;
   world.mouse.angle = Math.atan2(dy, dx);
   world.mouse.leftDown = (e.buttons & 1) == 1;
   world.mouse.rightDown = (e.buttons & 2) == 2;

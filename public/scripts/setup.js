@@ -26,11 +26,13 @@ async function setupWorldParameters() {
     "../assets/tank_green.png",
     "../assets/tank_red.png",
   ];
+  world.gotInput = false;
   world.mouse = {
     oldX: 0,
     oldY: 0,
     x: 0,
     y: 0,
+    oldAngle: 0,
     angle: 0,
     scrollX: 0,
     scrollY: 0,

@@ -1,4 +1,5 @@
-import { world, serialize, deserialize } from "./world.js";
+import { defineQuery } from "/bitecs.js";
+import { world, deserialize } from "./world.js";
 import {
   getAllEntities,
   removeEntity,
@@ -7,6 +8,7 @@ import {
   registerComponents,
   DESERIALIZE_MODE,
 } from "/bitecs.js";
+import {Me} from "/components/Me.js"
 
 export function setupConnection() {
   world.socket = io({
@@ -22,7 +24,7 @@ export function setupIOEvents() {
 }
 
 function welcome(_myId) {
-  console.log("I was welcomed")
+  console.log("I was welcomed");
 }
 
 function serverUpdate(packet) {
@@ -34,7 +36,7 @@ function serverUpdate(packet) {
   // resetWorld(world);
 
   // NOTE: notice the mode is MAP, this is necessary to sync with the server
-  const deserializedEntIds = deserialize(world, packet, DESERIALIZE_MODE.MAP);
+  const deserializedEntIds = deserialize(world, packet);
   // NOTE: Remove all entities that are no longer in the server
   // eg: player disconnected
   // NOTE: This really hinders performance, this is O(n^2)
