@@ -64,8 +64,9 @@ canvas {
 }
 
 #titleItem h1 {
+  font-size: 3em;
   color: white;
-  padding-top: 64px;
+  padding-top: 10vh;
 }
 
 #joinItem {
