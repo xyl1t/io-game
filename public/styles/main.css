@@ -2,6 +2,18 @@
   font-family: "Roboto", sans-serif, "Arial";
 }
 
+
+
+*::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+* {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
 html,
 body,
 div,
@@ -23,15 +35,12 @@ canvas {
 }
 
 #gameContainer {
-  position: absolute;
+  position: fixed;
   z-index:1;
   filter: brightness(50%);
+
 }
 
-#startPageContainer {
-  position: absolute;
-  z-index:2;
-}
 
 /* body { */
 /*   overflow: hidden; */
