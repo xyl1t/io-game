@@ -1,7 +1,3 @@
-import { Position } from "/components/Position.js";
-import { Velocity } from "/components/Velocity.js";
-import { Sprite } from "/components/Sprite.js";
-import { Player } from "/components/Player.js";
 import { renderingSystem } from "/systems/RenderingSystem.js";
 import {
   setup,

@@ -30,6 +30,20 @@ export async function setupWorldParameters() {
     "../assets/tank_green.png",
     "../assets/tank_red.png",
   ];
+  world.mouse = {
+    oldX: 0,
+    oldY: 0,
+    x: 0,
+    y: 0,
+    angle: 0,
+    scrollX: 0,
+    scrollY: 0,
+    leftDown: false,
+    rightDown: false,
+  };
+  world.keyboard = {};
+  world.windowWidth = -1;
+  world.windowHeight = -1;
 }
 
 export async function loadImages() {
@@ -56,6 +70,7 @@ export async function setupCanvas() {
   canvas.height = window.innerHeight;
   world.canvas = canvas;
   world.ctx = world.canvas.getContext("2d");
+  resize(); // set canvas width/height
 }
 
 export async function setupEvents() {
@@ -79,10 +94,9 @@ export async function setupConnection() {
   world.socket.on("serverUpdate", (packet) => {
     // NOTE: Reset the world, if this is not done, entities that were
     // delted/removed in the server won't be reflected on the client
-    // TODO: maybe delete those entities (deleted on the server) manually?
+
     // WARN: doesn't work properly!!! -> can't add
     // entities back normally
-
     // resetWorld(world);
 
     // NOTE: notice the mode is MAP, this is necessary to sync with the server
@@ -90,37 +104,75 @@ export async function setupConnection() {
     // NOTE: Remove all entities that are no longer in the server
     // eg: player disconnected
     // NOTE: This really hinders performance, this is O(n^2)
-    getAllEntities(world).forEach(eid => {
+    // Maybe do this not every frame but every other frame?
+    getAllEntities(world).forEach((eid) => {
       if (!deserializedEntIds.includes(eid)) removeEntity(world, eid);
-    })
+    });
   });
 }
 
 function resize() {
-  console.log("resize");
   world.canvas.width = window.innerWidth;
   world.canvas.height = window.innerHeight;
   world.canvas.style.width = window.innerWidth + "px";
   world.canvas.style.height = window.innerHieght + "px";
+  world.windowWidth = window.innerWidth;
+  world.windowHeight = window.innerHeight;
 }
+
 function mousedown(e) {
-  console.log("mousedown");
+  world.mouse.x = e.pageX - world.canvas.offsetLeft;
+  world.mouse.y = e.pageY - world.canvas.offsetTop;
+  world.mouse.leftDown = (e.buttons & 1) == 1;
+  world.mouse.rightDown = (e.buttons & 2) == 2;
 }
+
 function mouseup(e) {
-  console.log("mouseup");
+  world.mouse.x = e.pageX - world.canvas.offsetLeft;
+  world.mouse.y = e.pageY - world.canvas.offsetTop;
+  world.mouse.leftDown = (e.buttons & 1) == 1;
+  world.mouse.rightDown = (e.buttons & 2) == 2;
 }
+
 function mouseleave(e) {
-  console.log("mouseleave");
+  world.mouse.x = e.pageX - world.canvas.offsetLeft;
+  world.mouse.y = e.pageY - world.canvas.offsetTop;
+  world.mouse.leftDown = false;
+  world.mouse.rightDown = false;
 }
+
 function mousemove(e) {
-  console.log("mousemove");
+  world.mouse.oldX = world.mouse.x;
+  world.mouse.oldY = world.mouse.y;
+  world.mouse.x = e.pageX - world.canvas.offsetLeft;
+  world.mouse.y = e.pageY - world.canvas.offsetTop;
+  const dx = world.mouse.x - world.windowWidth / 2;
+  const dy = world.mouse.y - world.windowHeight / 2;
+  world.mouse.angle = Math.atan2(dy, dx);
+  world.mouse.leftDown = (e.buttons & 1) == 1;
+  world.mouse.rightDown = (e.buttons & 2) == 2;
 }
+
+// NOTE: yet unused
 function wheel(e) {
-  console.log("wheel");
+  e.preventDefault();
+
+  let deltaX = e.deltaX;
+  let deltaY = e.deltaY;
+
+  if (e.shiftKey) {
+    deltaY = 0;
+    deltaX = e.deltaY || e.deltaX;
+  }
+
+  const finalX = (Math.max(-100, Math.min(100, deltaX)) / 100) * 100;
+  const finalY = (Math.max(-100, Math.min(100, deltaY)) / 100) * 100;
 }
+
 function keydown(e) {
-  console.log("keydown");
+  world.keyboard[e.key.toLowerCase()] = true;
 }
+
 function keyup(e) {
-  console.log("keyup");
+  world.keyboard[e.key.toLowerCase()] = false;
 }
