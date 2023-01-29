@@ -4,7 +4,15 @@ import { Sprite } from "./Sprite.js";
 import { Player } from "./Player.js";
 import { Me } from "./Me.js";
 import { Input } from "./Input.js";
+import { Map } from "./Map.js";
 
-// necessary for serialization and deserialization
-export const serializationConfig = [Me, Input, Position, Sprite, Velocity, Player];
-
+// necessary config for serialization and deserialization
+export const serializationConfig = [
+  Map,
+  Me,
+  Input,
+  Position,
+  Sprite,
+  Velocity,
+  Player,
+];
