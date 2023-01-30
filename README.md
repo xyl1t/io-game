@@ -1,5 +1,7 @@
 # io-game over WebSockets for project days
 
+## ARCHIVED: This project now lives under a new [REPO](https://github.com/xyl1t/sasma-io)
+
 **Authors**
 * Thomas Fischer
 * Paul Trattnig
